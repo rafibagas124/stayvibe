@@ -78,6 +78,19 @@ function renderProperties(data) {
     });
 }
 
+// JEMBATAN GLOBAL AGAR KLIK DARI FILTER/KODE BARU INDEX.HTML TETAP TERBACA BESERTA INDEKSNYA
+window.pilihDetailProperti = function(firebaseId) {
+    if (propertyDatabase && propertyDatabase.length > 0) {
+        const targetIndex = propertyDatabase.findIndex(item => item.id === firebaseId);
+        if (targetIndex !== -1) {
+            selectProperty(targetIndex);
+            // Otomatis gulir layar ke bagian detail info
+            const detailView = document.getElementById('view-title');
+            if (detailView) detailView.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+};
+
 // RENDER UNTUK DASHBOARD OWNER (DENGAN COCOK ID & FITUR PROTEKSI HAPUS)
 function renderOwnerProperties(data) {
     const grid = document.getElementById('owner-catalog-grid');
@@ -167,7 +180,6 @@ function logoutOwner() {
 
 // FUNGSI PROTEKSI HAPUS DATA: HANYA OWNER YANG COCOK YANG DAPAT MEMPROSES
 function deleteProperty(id, title, creatorId) {
-    // Proteksi Keamanan Lapis Kedua: Tolak jika ID Owner aktif tidak sama dengan ID pembuat properti
     if (creatorId !== activeOwnerId) {
         alert("⛔ VALIDASI EROR: Anda tidak diizinkan untuk menghapus data akomodasi milik akun lain!");
         return;
@@ -329,18 +341,26 @@ function submitReview() {
     database.ref(`reviews/${currentProperty.id}`).push(newReview)
         .then(() => {
             alert("Ulasan Anda berhasil dikirim secara real-time!");
-            // Reset form input ulasan setelah berhasil terkirim
             document.getElementById('input-comment').value = "";
             if(photoInput) photoInput.value = "";
         })
         .catch((err) => alert("Gagal mengirim ulasan: " + err.message));
 }
 
-// HANDLE UPLOAD PROPERTI BARU
+// HANDLE UPLOAD PROPERTI BARU (DIPERBARUI TOTAL)
 function handleUpload(event) {
     event.preventDefault();
     
-    let placeholderImg = "https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500"; 
+    // Membaca nama file lokal asli yang kamu masukkan di kolom berkas Pemilik Properti
+    const thumbFile = document.getElementById('file-thumb');
+    let namaGambarAsli = "";
+    
+    if (thumbFile && thumbFile.files.length > 0) {
+        namaGambarAsli = thumbFile.files[0].name;
+    }
+    
+    // Jika ada file yang dimasukkan, gunakan namanya. Jika kosong, pakai fallback Unsplash
+    let finalImgUrl = namaGambarAsli ? namaGambarAsli : "https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500"; 
 
     const newProperty = {
         title: document.getElementById('meta-title').value,
@@ -355,7 +375,8 @@ function handleUpload(event) {
         maps: document.getElementById('meta-maps').value, 
         phone: document.getElementById('meta-phone').value,
         booking: document.getElementById('meta-booking').value,
-        img: placeholderImg
+        img: finalImgUrl, // Menyimpan string nama file gambar aslimu secara dinamis
+        statusSistem: "LIVE"
     };
 
     database.ref('properties').push(newProperty)
