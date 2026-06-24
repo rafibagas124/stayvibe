@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>STAYVIBE - Pendaftaran Kemitraan Properti</title>
+    <style>
+        body { background: #0B0C10; color: #fff; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 40px; }
+        .container { max-width: 900px; margin: 0 auto; background: #191B26; border: 1px solid #232631; padding: 30px; border-radius: 8px; }
+        h1, h2 { color: #66FCF1; }
+        .grid-paket { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 20px 0; }
+        .card-paket { background: #111; border: 1px solid #232631; padding: 20px; border-radius: 6px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .card-paket:hover, .card-paket.active { border-color: #66FCF1; box-shadow: 0 0 10px rgba(102, 252, 241, 0.2); }
+        .btn-neon { background: #66FCF1; color: #111; border: none; padding: 12px 24px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 15px; }
+        input, select, textarea { width: 100%; padding: 12px; background: #111; border: 1px solid #232631; color: #fff; border-radius: 4px; box-sizing: border-box; margin-bottom: 15px; }
+        .alert-success { background: #1f3a2b; border: 1px solid #2ecc71; color: #2ecc71; padding: 15px; border-radius: 4px; margin-bottom: 20px; display: none; }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html" style="color: #66FCF1; text-decoration: none;">← Kembali ke Beranda</a>
+    <h1>📝 Formulir Kemitraan STAYVIBE</h1>
+    <p style="color: #8A8F98;">Bergabunglah bersama kami untuk menjangkau ribuan pelanggan secara real-time.</p>
+
+    <hr style="border-color: #232631; margin: 30px 0;">
+
+    <h2>📋 Persyaratan Menjadi Mitra</h2>
+    <ul style="color: #C5C6C7; line-height: 1.6;">
+        <li>Memiliki dokumen identitas (KTP) yang sah.</li>
+        <li>Menjamin keakuratan data koordinat Google Maps dan foto akomodasi asli.</li>
+        <li>Wajib mematuhi regulasi akomodasi yang dipilih (Umum / Syariah).</li>
+        <li>Setuju dengan potongan platform sebesar 0% selama masa kontrak berjalan.</li>
+    </ul>
+
+    <h2>💳 Pilih Paket Langganan Properti</h2>
+    <div class="grid-paket">
+        <div class="card-paket" onclick="pilihPaket('Trial 14 Hari', 0, this)">
+            <h3>🎁 Trial</h3>
+            <p style="color: #66FCF1; font-weight: bold;">Gratis</p>
+            <p style="font-size: 12px; color: #8A8F98;">Aktif selama 14 Hari. Terbatas untuk 1 Properti.</p>
+        </div>
+        <div class="card-paket" onclick="pilihPaket('Bulanan', 150000, this)">
+            <h3>🌙 Bulanan</h3>
+            <p style="color: #66FCF1; font-weight: bold;">Rp 150.000 / bln</p>
+            <p style="font-size: 12px; color: #8A8F98;">Akses penuh pengelolaan & upload sepuasnya.</p>
+        </div>
+        <div class="card-paket" onclick="pilihPaket('Tahunan', 1200000, this)">
+            <h3>☀️ Tahunan</h3>
+            <p style="color: #66FCF1; font-weight: bold;">Rp 1.200.000 / thn</p>
+            <p style="font-size: 12px; color: #8A8F98;">Hemat 2 bulan! Prioritas pencarian paling atas.</p>
+        </div>
+    </div>
+    
+    <!-- INFORMASI PAJAK & BIAYA TAMBAHAN TRANSPARAN -->
+    <p style="color: #8A8F98; font-size: 13px; margin-top: -5px; padding: 10px; background: #111; border-left: 3px solid #66FCF1; border-radius: 4px;">
+        ⚠️ <strong>Catatan Biaya:</strong> Harga paket di atas belum termasuk <strong>PPN 11%</strong> dan biaya pemeliharaan sistem sebesar <strong>Rp 5.000</strong> per penagihan. Rincian kalkulasi final akan tertera jelas pada invoice resmi.
+    </p>
+
+    <h2>🔑 Ajukan Permintaan ID Owner & Pendaftaran</h2>
+    <div id="notif-sukses" class="alert-success"></div>
+
+    <form id="form-mitra" onsubmit="ajukanMitra(event)">
+        <label>Nama Lengkap Pemilik</label>
+        <input type="text" id="mitra-nama" placeholder="Contoh: Andi Wijaya" required>
+
+        <label>Nomor WhatsApp Aktif</label>
+        <input type="text" id="mitra-kontak" placeholder="Contoh: 08123456789" required>
+
+        <label>📧 Email Bisnis / Perusahaan (Untuk Pengiriman Invoice & Tagihan)</label>
+        <input type="email" id="mitra-email" placeholder="Contoh: admin@kostandi.com atau andi@gmail.com" required>
+        <p style="color: #8A8F98; font-size: 12px; margin-top: -10px; margin-bottom: 15px;">
+            *Berkas invoice resmi (PDF) beserta rincian pajak (PPN) dan instruksi transfer bank akan dikirimkan langsung ke alamat email ini.
+        </p>
+
+        <label>Nama Akomodasi/Kost Yang Ingin Didaftarkan</label>
+        <input type="text" id="mitra-properti" placeholder="Contoh: Guesthouse Margonda" required>
+
+        <label>Rekomendasi ID Akses Owner yang Diinginkan</label>
+        <input type="text" id="mitra-request-id" placeholder="Contoh: OWNER-ANDI (Gunakan Huruf Kapital)" required>
+
+        <!-- Hidden input untuk menampung data paket & harga dasar -->
+        <input type="hidden" id="mitra-paket" value="">
+        <input type="hidden" id="mitra-harga-dasar" value="0">
+
+        <button type="submit" class="btn-neon">KIRIM PERMOHONAN AKSES KE TIM STAYVIBE</button>
+    </form>
+
+    <div style="margin-top: 30px; padding: 20px; background: #111; border-radius: 6px; text-align: center; border: 1px dashed #232631;">
+        <p style="margin: 0 0 10px 0; font-size: 14px; color: #8A8F98;">Sudah punya ID Owner terverifikasi oleh Tim STAYVIBE?</p>
+        <a href="dashboard-owner.html" style="color: #66FCF1; font-weight: bold; text-decoration: none;">Masuk ke Dashboard Kelola Properti →</a>
+    </div>
+</div>
+
+<script>
+// CONFIGURATION FIREBASE ASLI MILIKMU
+const firebaseConfig = {
+    apiKey: "AIzaSyDiB5OzbszFLTI9cGulNVYoywp7_0f3Dkc",
+    authDomain: "stayvibe-f52d4.firebaseapp.com",
+    databaseURL: "https://stayvibe-f52d4-default-rtdb.firebaseio.com", 
+    projectId: "stayvibe-f52d4",
+    storageBucket: "stayvibe-f52d4.firebasestorage.app",
+    messagingSenderId: "866844470458",
+    appId: "1:866844470458:web:b84ff7faf9a746b43da683",
+    measurementId: "G-CCN7FW8Q78"
+};
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+// Fungsi pilih paket diperbarui untuk menangkap harga dasar komponen
+function pilihPaket(namaPaket, harga, elemen) {
+    document.querySelectorAll('.card-paket').forEach(c => c.classList.remove('active'));
+    elemen.classList.add('active');
+    document.getElementById('mitra-paket').value = namaPaket;
+    document.getElementById('mitra-harga-dasar').value = harga;
+}
+
+function ajukanMitra(e) {
+    e.preventDefault();
+    const paket = document.getElementById('mitra-paket').value;
+    const hargaDasar = parseInt(document.getElementById('mitra-harga-dasar').value) || 0;
+    
+    if(!paket) {
+        alert("Pilih paket langganan Anda terlebih dahulu (Trial / Bulanan / Tahunan)!");
+        return;
+    }
+
+    // Alur Kalkulasi Pajak Tambahan (Hanya jika bukan paket trial)
+    let ppn = 0;
+    let biayaAdmin = 0;
+    let totalTagihan = 0;
+
+    if (hargaDasar > 0) {
+        ppn = hargaDasar * 0.11; // PPN 11%
+        biayaAdmin = 5000;       // Biaya Pemeliharaan Sistem / Admin fixed
+        totalTagihan = hargaDasar + ppn + biayaAdmin;
+    }
+
+    const requestData = {
+        nama: document.getElementById('mitra-nama').value,
+        kontak: document.getElementById('mitra-kontak').value,
+        emailPerusahaan: document.getElementById('mitra-email').value,
+        namaProperti: document.getElementById('mitra-properti').value,
+        requestedId: document.getElementById('mitra-request-id').value.trim().toUpperCase(),
+        paketPilihan: paket,
+        
+        // Rincian Finansial Transparan untuk Tim Admin Stayvibe di Firebase
+        rincianBiaya: {
+            hargaDasarPaket: hargaDasar,
+            pajakPPN: ppn,
+            biayaSistem: biayaAdmin,
+            totalKalkulasiAkhir: totalTagihan
+        },
+        
+        statusAkses: "PENDING", 
+        statusPembayaran: (hargaDasar === 0) ? "GRATIS" : "BELUM DIBAYAR (MENUNGGU INVOICE)",
+        tanggalDaftar: new Date().toLocaleDateString('id-ID')
+    };
+
+    // Simpan rincian data ke Firebase database
+    database.ref('requests_mitra').push(requestData)
+        .then(() => {
+            // Format Rupiah untuk tampilan notifikasi langsung ke user
+            const formatRupiah = (angka) => "Rp " + angka.toLocaleString('id-ID');
+            
+            let msg = `🎉 BERHASIL! Permohonan ID "${requestData.requestedId}" telah masuk antrean.`;
+            
+            if(hargaDasar > 0) {
+                msg += ` Estimasi total tagihan Anda adalah ${formatRupiah(totalTagihan)} (Termasuk PPN 11% & Admin). Berkas invoice resmi segera dikirimkan ke email: "${requestData.emailPerusahaan}".`;
+            } else {
+                msg += ` Akun paket Trial Anda gratis. Tim StayVibe akan segera mengaktifkan ID Anda dan melakukan konfirmasi via WhatsApp.`;
+            }
+            
+            document.getElementById('notif-sukses').innerText = msg;
+            document.getElementById('notif-sukses').style.display = 'block';
+            document.getElementById('form-mitra').reset();
+            document.querySelectorAll('.card-paket').forEach(c => c.classList.remove('active'));
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        })
+        .catch(err => alert("Gagal koneksi server pendaftaran: " + err.message));
+}
+</script>
+</body>
+</html>

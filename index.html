@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STAYVIBE - Temukan Akomodasi Terbaik</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Style Komponen Dropdown Menu Bisnis */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            margin-left: 15px;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #191B26;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+            z-index: 1000;
+            border: 1px solid #232631;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .dropdown-content a {
+            color: #fff !important;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            font-size: 14px;
+            transition: background 0.2s ease;
+            margin-left: 0 !important;
+            border-radius: 0 !important;
+        }
+        .dropdown-content a:hover {
+            background-color: #232631;
+            color: #66FCF1 !important;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        /* Style Tambahan untuk Card Properti */
+        .property-card { background: #191B26; border: 1px solid #232631; border-radius: 6px; overflow: hidden; cursor: pointer; transition: 0.3s; }
+        .property-card:hover { border-color: #66FCF1; transform: translateY(-3px); }
+        .property-info { padding: 15px; }
+        .property-info h3 { margin: 0 0 8px 0; color: #fff; font-size: 18px; }
+        .property-info p { margin: 0 0 10px 0; color: #8A8F98; font-size: 13px; }
+        .property-price { color: #66FCF1; font-weight: bold; font-size: 15px; }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR NAVIGATION -->
+    <header class="navbar">
+        <div class="logo">STAY<span>VIBE</span></div>
+        <nav style="display: flex; align-items: center;">
+            <a href="#home">Home</a>
+            <a href="#catalog">Daftar Properti</a>
+            <a href="#search">Cari Properti</a>
+            <a href="#viewer">Ulasan Properti</a>
+            
+            <!-- MENU DROPDOWN BISNIS (Hanya Berisi Daftar Mitra Sesuai Aturan Hak Akses) -->
+            <div class="dropdown">
+                <a href="#" style="color: #66FCF1; border: 1px solid #66FCF1; padding: 5px 15px; border-radius: 4px; display: inline-block;">💼 Bisnis ▼</a>
+                <div class="dropdown-content">
+                    <a href="daftar-mitra.html">📝 Daftar Mitra</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 1. HOME SECTION -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>TEMUKAN PENGINAPAN TERBAIK DENGAN VIRTUAL TOUR</h1>
+            <p>Sistem Manajemen Akomodasi Properti Modern, Cepat, dan Terintegrasi</p>
+            <a href="#catalog" class="btn-neon">LIHAT DAFTAR PROPERTI</a>
+        </div>
+    </section>
+
+    <!-- 2. DAFTAR & CARI PROPERTI SECTION -->
+    <section id="catalog" class="container">
+        <h2 class="section-title">Daftar & Cari Properti</h2>
+        
+        <div class="search-box" id="search">
+            <input type="text" id="search-input" placeholder="Cari berdasarkan nama, kota, fasilitas (#wifi, #pool), atau harga...">
+            <div class="filters">
+                <input type="text" id="filter-city" placeholder="Ketik kota pencarian (cth: Depok)..." style="background: #191B26; color: #fff; border: 1px solid #232631; padding: 12px; border-radius: 4px; font-size: 14px;">
+                <select id="filter-type">
+                    <option value="">Semua Kategori</option>
+                    <option value="Umum">Umum</option>
+                    <option value="Syariah">Syariah</option>
+                </select>
+            </div>
+            <button class="btn-neon" onclick="searchData()">CARI PROPERTI</button>
+        </div>
+
+        <div class="grid" id="catalog-grid">
+            <!-- Menunggu data dari server Firebase -->
+            <p style="color: #8A8F98; text-align: center; grid-column: 1/-1;">Memuat list hunian terbaru...</p>
+        </div>
+    </section>
+
+    <!-- 3. ULASAN PROPERTI (VIEWER COMPONENT) -->
+    <section id="viewer" class="container bg-dark-card">
+        <h2 class="section-title">Ulasan & Detail Properti</h2>
+        <div class="viewer-layout">
+            <div class="video-player">
+                <div class="screen-simulation">
+                    <span class="badge-status" id="view-regulasi">-</span>
+                    <p id="media-preview-text">🎬 [Silakan pilih properti pada daftar di atas]</p>
+                </div>
+                <div class="video-controls">
+                    <button>▶ PLAY VIRTUAL TOUR</button>
+                    <div class="timeline"></div>
+                    <span id="view-duration">00:00</span>
+                </div>
+                <div class="maps-simulation" id="view-maps">
+                    📍 Lokasi Google Maps Properti
+                </div>
+            </div>
+            
+            <div class="audio-player">
+                <h3 id="view-title">Pilih Properti</h3>
+                <p id="view-desc" style="color: #8A8F98; margin: 10px 0; font-size: 14px;">Belum ada properti yang dipilih untuk dilihat detailnya.</p>
+                
+                <div class="action-buttons-group" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                    <a id="btn-call" href="#" target="_blank" class="btn-neon" style="text-align: center; background: #25D366; color: #fff; border-color: #25D366; font-weight: bold;">📞 HUBUNGI PETUGAS VIA WHATSAPP</a>
+                    <div id="booking-links-container" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <!-- Tombol booking dinamis disuntik di sini oleh JS -->
+                    </div>
+                </div>
+
+                <div class="metadata-display">
+                    <h3>📊 Spesifikasi Lengkap Properti</h3>
+                    <div id="metadata-specs">
+                        <p style="color: #8A8F98;">Data spesifikasi akan dimuat otomatis di sini.</p>
+                    </div>
+                </div>
+
+                <div class="review-section">
+                    <h3>⭐ Berikan Ulasan & Rating</h3>
+                    <div class="rating-input">
+                        <label>Rating:</label>
+                        <select id="input-star">
+                            <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+                            <option value="4">⭐⭐⭐⭐ (4/5)</option>
+                            <option value="3">⭐⭐⭐ (3/5)</option>
+                            <option value="2">⭐⭐ (2/5)</option>
+                            <option value="1">⭐ (1/5)</option>
+                        </select>
+                    </div>
+                    <textarea id="input-comment" placeholder="Tulis ulasan Anda mengenai properti ini..."></textarea>
+                    
+                    <!-- FITUR UNGHAH FOTO TAMBAHAN OLEH USER -->
+                    <div style="margin-top: 12px; font-size: 13px; text-align: left;">
+                        <label style="color: #8A8F98; display: block; margin-bottom: 6px; font-weight: 500;">📸 Tambahkan Foto Kondisi Kamar/Lokasi (Opsional):</label>
+                        <input type="file" id="input-review-photo" accept="image/*" style="background: #11121a; color: #ffffff; border: 1px solid #232631; padding: 10px; border-radius: 4px; width: 100%; font-size: 12px; outline: none;">
+                    </div>
+
+                    <button class="btn-neon" onclick="submitReview()" style="width: 100%; margin-top: 15px; font-size: 12px;">KIRIM ULASAN</button>
+                    
+                    <div class="live-reviews">
+                        <h4>Ulasan Pengguna Terkini:</h4>
+                        <div id="reviews-container">
+                            <p style="color: #8A8F98; font-size: 12px;">Belum ada ulasan.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer style="text-align: center; padding: 40px; color: #8A8F98; border-top: 1px solid #232631; margin-top: 50px;">
+        STAYVIBE © 2026 - Platform Manajemen Akomodasi Publik Terintegrasi
+    </footer>
+
+    <!-- Firebase Core & Realtime Database SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <!-- KONFIGURASI DAN LOGIKA PENYARINGAN REAL-TIME (ANTI-BLACKLIST) -->
+    <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDiB5OzbszFLTI9cGulNVYoywp7_0f3Dkc",
+        authDomain: "stayvibe-f52d4.firebaseapp.com",
+        databaseURL: "https://stayvibe-f52d4-default-rtdb.firebaseio.com", 
+        projectId: "stayvibe-f52d4",
+        storageBucket: "stayvibe-f52d4.firebasestorage.app",
+        messagingSenderId: "866844470458",
+        appId: "1:866844470458:web:b84ff7faf9a746b43da683",
+        measurementId: "G-CCN7FW8Q78"
+    };
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+
+    // Jalankan pemantauan data properti real-time
+    db.ref('properties').on('value', (snapshot) => {
+        const gridContainer = document.getElementById('catalog-grid');
+        gridContainer.innerHTML = ""; // Bersihkan kontainer grid
+
+        if (!snapshot.exists()) {
+            gridContainer.innerHTML = `<p style="color: #8A8F98; text-align: center; grid-column: 1/-1;">Belum ada properti yang tersedia saat ini.</p>`;
+            return;
+        }
+
+        let totalTampil = 0;
+
+        snapshot.forEach((childSnapshot) => {
+            const key = childSnapshot.key;
+            const item = childSnapshot.val();
+
+            // 🚫 LOGIKA DETEKSI BLACKLIST TIM STAYVIBE:
+            // Jika statusSistem diset "BLACKLIST", lewati dan jangan render properti ini ke layar user
+            if (item.statusSistem === "BLACKLIST") {
+                return; 
+            }
+
+            totalTampil++;
+
+            // Render komponen properti yang lolos sensor (Status LIVE / AKTIF)
+            gridContainer.innerHTML += `
+                <div class="property-card" onclick="pilihDetailProperti('${key}')">
+                    <img src="${item.img || 'https://via.placeholder.com/350x200'}" style="width:100%; height:180px; object-fit:cover;">
+                    <div class="property-info">
+                        <h3>${item.title || 'Tanpa Nama'}</h3>
+                        <p>📍 ${item.city || '-'} | Kategori: ${item.type || 'Umum'}</p>
+                        <div class="property-price">Rp ${(item.price || 0).toLocaleString('id-ID')}/malam</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        if(totalTampil === 0) {
+            gridContainer.innerHTML = `<p style="color: #8A8F98; text-align: center; grid-column: 1/-1;">Semua properti sedang ditangguhkan atau tidak tersedia.</p>`;
+        }
+    });
+
+    // Fungsi placeholder agar tidak error sebelum script.js eksternal milikmu dimuat
+    function pilihDetailProperti(id) {
+        if(typeof window.bukaDetailPropertiAsli === "function") {
+            window.bukaDetailPropertiAsli(id);
+        } else {
+            console.log("Membuka properti dengan ID:", id);
+            // Kode kelola viewer milik script.js kamu akan mengambil alih di sini
+        }
+    }
+    </script>
+
+    <!-- File Javascript Eksternal Bawaan Kamu -->
+    <script src="script.js"></script>
+</body>
+</html>

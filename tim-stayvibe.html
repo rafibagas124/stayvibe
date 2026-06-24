@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>STAYVIBE - Super Admin Panel (Internal Tim)</title>
+    <style>
+        body { background: #0B0C10; color: #fff; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 30px; }
+        h1, h2 { color: #FF5A5F; border-bottom: 2px solid #232631; padding-bottom: 10px; }
+        .section { background: #191B26; padding: 20px; border-radius: 8px; margin-bottom: 35px; border: 1px solid #232631; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #111; }
+        th, td { border: 1px solid #232631; padding: 12px; text-align: left; font-size: 14px; }
+        th { background-color: #1f222e; color: #66FCF1; }
+        .btn-action { padding: 6px 12px; font-weight: bold; border-radius: 4px; cursor: pointer; border: none; margin-right: 5px; font-size: 12px; }
+        .btn-acc { background: #2ecc71; color: #fff; }
+        .btn-bl { background: #e67e22; color: #fff; }
+        .btn-del { background: #e74c3c; color: #fff; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .badge-pending { background: #f1c40f; color: #111; }
+        .badge-active { background: #2ecc71; color: #fff; }
+        .badge-blacklist { background: #e74c3c; color: #fff; }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+
+    <h1>🛠️ STAYVIBE Central Control Panel (Tim Internal)</h1>
+    <p style="color:#8A8F98;">Gunakan halaman kontrol rahasia ini untuk mengelola siklus data properti, validasi lisensi mitra, dan memitigasi pelanggaran sistem.</p>
+
+    <div class="section">
+        <h2>📥 Masuk Permohonan Akses ID Owner Baru</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nama Pemilik</th>
+                    <th>Kontak / WhatsApp</th>
+                    <th>Email Perusahaan (Invoice Target)</th>
+                    <th>Nama Properti</th>
+                    <th>ID Yang Diminta</th>
+                    <th>Paket Lisensi</th>
+                    <th>Rincian Tagihan Final</th>
+                    <th>Status</th>
+                    <th>Tindakan Operasional</th>
+                </tr>
+            </thead>
+            <tbody id="tabel-requests">
+                </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>🏢 Manajemen Seluruh Properti Publik (Global System)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Gambar</th>
+                    <th>Nama Properti</th>
+                    <th>Lokasi</th>
+                    <th>Owner ID</th>
+                    <th>Harga/Malam</th>
+                    <th>Status Distribusi</th>
+                    <th>Aksi Tim STAYVIBE</th>
+                </tr>
+            </thead>
+            <tbody id="tabel-properties">
+                </tbody>
+        </table>
+    </div>
+
+<script>
+// CONFIGURATION FIREBASE ASLI MILIKMU
+const firebaseConfig = {
+    apiKey: "AIzaSyDiB5OzbszFLTI9cGulNVYoywp7_0f3Dkc",
+    authDomain: "stayvibe-f52d4.firebaseapp.com",
+    databaseURL: "https://stayvibe-f52d4-default-rtdb.firebaseio.com", 
+    projectId: "stayvibe-f52d4",
+    storageBucket: "stayvibe-f52d4.firebasestorage.app",
+    messagingSenderId: "866844470458",
+    appId: "1:866844470458:web:b84ff7faf9a746b43da683",
+    measurementId: "G-CCN7FW8Q78"
+};
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+// REAL-TIME FETCH PERMOHONAN MITRA (DENGAN RINCIAN INVOICE & EMAIL)
+database.ref('requests_mitra').on('value', (snapshot) => {
+    const data = snapshot.val();
+    const container = document.getElementById('tabel-requests');
+    container.innerHTML = "";
+    
+    if(!data) {
+        container.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#8A8F98;">Tidak ada permohonan lisensi kemitraan saat ini.</td></tr>`;
+        return;
+    }
+    
+    Object.keys(data).forEach(key => {
+        const req = data[key];
+        const statusBadge = req.statusAkses === "PENDING" ? `<span class="badge badge-pending">PENDING</span>` : `<span class="badge badge-active">TERVERIFIKASI</span>`;
+        
+        // Format Rupiah pembantu internal
+        const formatRupiah = (angka) => "Rp " + (angka || 0).toLocaleString('id-ID');
+
+        // Mengolah rincian finansial transparan yang dikirim dari form klien
+        let rincianBiayaHTML = "";
+        let totalBiayaPesan = 0;
+        
+        if (req.rincianBiaya && req.rincianBiaya.hargaDasarPaket > 0) {
+            totalBiayaPesan = req.rincianBiaya.totalKalkulasiAkhir;
+            rincianBiayaHTML = `
+                <div style="font-size:12px; line-height:1.4;">
+                    Dasar: ${formatRupiah(req.rincianBiaya.hargaDasarPaket)}<br>
+                    PPN (11%): ${formatRupiah(req.rincianBiaya.pajakPPN)}<br>
+                    Admin: ${formatRupiah(req.rincianBiaya.biayaSistem)}<br>
+                    <strong style="color:#66FCF1;">Total: ${formatRupiah(totalBiayaPesan)}</strong>
+                </div>
+            `;
+        } else {
+            rincianBiayaHTML = `<span style="color:#2ecc71; font-size:12px;">Free Trial (Rp 0)</span>`;
+        }
+        
+        container.innerHTML += `
+            <tr>
+                <td><strong>${req.nama}</strong></td>
+                <td><a href="https://wa.me/${req.kontak}" target="_blank" style="color:#66FCF1;">${req.kontak}</a></td>
+                <td><span style="color:#e67e22; font-weight:500;">${req.emailPerusahaan || '-'}</span></td>
+                <td>${req.namaProperti}</td>
+                <td style="color:#66FCF1; font-weight:bold;">${req.requestedId}</td>
+                <td>🎫 ${req.paketPilihan}</td>
+                <td>${rincianBiayaHTML}</td>
+                <td>${statusBadge}</td>
+                <td>
+                    ${req.statusAkses === "PENDING" ? `<button class="btn-action btn-acc" onclick="setujuiID('${key}', '${req.requestedId}', '${req.kontak}', '${req.emailPerusahaan || ''}', '${req.paketPilihan}', ${totalBiayaPesan})">✅ ACC ID OWNER</button>` : `<span style="color:#2ecc71; font-size:12px;">Selesai di-proses</span>`}
+                </td>
+            </tr>
+        `;
+    });
+});
+
+// REAL-TIME FETCH SELURUH PROPERTI UNTUK BLACKLIST & HAPUS MASSA AKTIF
+database.ref('properties').on('value', (snapshot) => {
+    const data = snapshot.val();
+    const container = document.getElementById('tabel-properties');
+    container.innerHTML = "";
+    
+    if(!data) {
+        container.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#8A8F98;">Database properti kosong.</td></tr>`;
+        return;
+    }
+    
+    Object.keys(data).forEach(key => {
+        const item = data[key];
+        const isBlacklisted = item.statusSistem === "BLACKLIST";
+        const statusBadge = isBlacklisted ? `<span class="badge badge-blacklist">🚫 BLACKLISTED</span>` : `<span class="badge badge-active">🟢 LIVE / AKTIF</span>`;
+        
+        container.innerHTML += `
+            <tr>
+                <td><img src="${item.img}" style="width:50px; height:40px; object-fit:cover; border-radius:4px;"></td>
+                <td><strong>${item.title}</strong></td>
+                <td>📍 ${item.city}</td>
+                <td><code style="color:#66FCF1;">${item.creator}</code></td>
+                <td>Rp ${item.price.toLocaleString('id-ID')}</td>
+                <td>${statusBadge}</td>
+                <td>
+                    <button class="btn-action btn-bl" onclick="toggleBlacklist('${key}', '${item.title}', ${isBlacklisted})">
+                        ${isBlacklisted ? "🔓 Pulihkan Akses" : "🚫 Blacklist"}
+                    </button>
+                    <button class="btn-action btn-del" onclick="hapusSebabLisensi('${key}', '${item.title}')">
+                        🗑️ Hapus Permanen (Masa Aktif Habis)
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+});
+
+// FUNGSI 1: ACC ID OWNER MITRA + KIRIM NOTIF PENGIRIMAN INVOICE MANUAL
+function setujuiID(key, idGenerated, kontak, email, paket, totalTagihan) {
+    let confirmMsg = `Apakah Anda yakin ingin memverifikasi ID "${idGenerated}"?`;
+    if(totalTagihan > 0) {
+        confirmMsg += `\n\nPastikan Tim STAYVIBE sudah mengirimkan file PDF Invoice sebesar Rp ${totalTagihan.toLocaleString('id-ID')} ke email: ${email}`;
+    }
+
+    if(confirm(confirmMsg)) {
+        database.ref(`requests_mitra/${key}`).update({ 
+            statusAkses: "APPROVED",
+            statusPembayaran: (totalTagihan === 0) ? "GRATIS" : "INVOICE TERKIRIM (MENUNGGU TRANSFER)"
+        })
+        .then(() => {
+            alert(`Sukses! ID Akses Pemilik "${idGenerated}" kini resmi terdaftar aktif di server.`);
+            
+            // Otomatis buat draf text WA agar admin tinggal kirim instruksi tindak lanjut dengan rapi
+            let textWA = `Halo%20Kak%2C%20kami%20dari%20Tim%20STAYVIBE.%20Permohonan%20ID%20Owner%20"${idGenerated}"%20telah%20disetujui%20aktif%20di%20sistem.`;
+            if(totalTagihan > 0) {
+                textWA += `%20Rincian%20invoice%20tagihan%20paket%20${paket}%20sebesar%20Rp%20${totalTagihan.toLocaleString('id-ID')}%20(Termasuk%20PPN%2011%25%20%2B%20Admin)%20sudah%20kami%20kirimkan%20ke%20email%20perusahaan%20Anda%20(${email}).%20Mohon%20melakukan%20pembayaran%20dan%20konfirmasi%20ya%20Kak!`;
+            } else {
+                textWA += `%20Selamat%20menggunakan%20layanan%20paket%20Trial%20Gratis%20selama%2014%20hari%20ke%20depan.`;
+            }
+            
+            window.open(`https://wa.me/${kontak}?text=${textWA}`, '_blank');
+        });
+    }
+}
+
+// FUNGSI 2: TOGGLE STATUS BLACKLIST PROPERTI
+function toggleBlacklist(idProperti, judul, sudahBlacklist) {
+    const statusBaru = sudahBlacklist ? "LIVE" : "BLACKLIST";
+    const pesan = sudahBlacklist 
+        ? `Apakah Anda ingin memulihkan status penyebaran iklan untuk properti "${judul}"?`
+        : `Apakah Anda yakin ingin melakukan BLACKLIST terhadap properti "${judul}"? Properti tidak akan dirender di halaman pencarian publik user karena melanggar aturan.`;
+        
+    if(confirm(pesan)) {
+        database.ref(`properties/${idProperti}`).update({ statusSistem: statusBaru })
+            .then(() => alert(`Status keamanan sistem properti "${judul}" berhasil dimutasi ke: ${statusBaru}.`));
+    }
+}
+
+// FUNGSI 3: HAPUS PROPERTI KARENA MASA AKTIF LISENSI MITRA HABIS ATAU MENOLAK BAYAR
+function hapusSebabLisensi(idProperti, judul) {
+    if(confirm(`⚠️ PERINGATAN TIM internal: Hapus permanen properti "${judul}" dari basis data STAYVIBE dikarenakan masa aktif sewa kemitraan habis / tidak membayar perpanjangan paket?`)) {
+        database.ref(`properties/${idProperti}`).remove()
+            .then(() => {
+                database.ref(`reviews/${idProperti}`).remove(); // Bersihkan ulasan sekalian
+                alert(`Penghapusan sukses! Konten "${judul}" ditarik total dari server pusat.`);
+            })
+            .catch(err => alert("Gagal mengeksekusi operasi data: " + err.message));
+    }
+}
+</script>
+</body>
+</html>
