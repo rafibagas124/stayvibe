@@ -77,28 +77,134 @@
             </div>
 
             <div class="media-upload-section" style="margin-top: 20px; background: #191B26; padding: 20px; border-radius: 6px; border: 1px solid #232631;">
-                <h4 style="color: #66FCF1; margin-bottom: 10px;">📁 Tautan Media Properti</h4>
+                <h4 style="color: #66FCF1; margin-bottom: 10px;">📁 File Media Properti (Direct Upload)</h4>
                 <div class="upload-row">
                     <div class="media-box" style="width: 100%;">
-                        <label style="color: #fff; font-size: 14px;">Link URL / Alamat Gambar Properti (Thumbnail)</label>
-                        <input type="text" id="file-thumb" placeholder="Contoh: https://images.unsplash.com/... atau assets/gambar-hotel.jpg" style="width: 100%; background: #111; color: #fff; border: 1px solid #232631; padding: 12px; border-radius: 4px; margin-top: 5px; font-size: 13px;">
+                        <label style="color: #fff; font-size: 14px; display: block; margin-bottom: 5px;">Pilih Foto Gambar Utama / Thumbnail Properti</label>
+                        <input type="file" id="file-thumb-input" accept="image/*" required style="width: 100%; color: #fff; background: #111; padding: 10px; border: 1px solid #232631; border-radius: 4px; font-size: 13px;">
                     </div>
                 </div>
             </div>
 
-            <button type="submit" class="btn-neon btn-block" style="background: #66FCF1; color: #111; margin-top: 25px; padding: 15px; font-weight: bold; width: 100%; cursor: pointer;">PROSES UPLOAD PROPERTI</button>
+            <button type="submit" id="btn-submit" class="btn-neon btn-block" style="background: #66FCF1; color: #111; margin-top: 25px; padding: 15px; font-weight: bold; width: 100%; cursor: pointer;">PROSES UPLOAD PROPERTI</button>
         </form>
     </section>
 
     <section class="container" style="margin-top: 50px; margin-bottom: 50px;">
         <h2 class="section-title">Manajemen / Daftar Properti Anda</h2>
-        <p style="color: #8A8F98; margin-bottom: 20px;">Gunakan verifikasi ID Pemilik di bawah untuk mengelola data properti yang sudah terdaftar.</p>
+        <p style="color: #8A8F98; margin-bottom: 20px;">Berikut adalah daftar properti real-time yang terhubung dalam sistem database pusat.</p>
         
         <div class="grid" id="owner-catalog-grid"></div>
     </section>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="script.js"></script>
-</body>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script> <script>
+    // Konfigurasi Terpusat STAYVIBE
+    const firebaseConfig = {
+        apiKey: "AIzaSyDiB5OzbszFLTI9cGulNVYoywp7_0f3Dkc",
+        authDomain: "stayvibe-f52d4.firebaseapp.com",
+        databaseURL: "https://stayvibe-f52d4-default-rtdb.firebaseio.com", 
+        projectId: "stayvibe-f52d4",
+        storageBucket: "stayvibe-f52d4.firebasestorage.app",
+        messagingSenderId: "866844470458",
+        appId: "1:866844470458:web:b84ff7faf9a746b43da683",
+        measurementId: "G-CCN7FW8Q78"
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+    const storage = firebase.storage(); // Inisialisasi Storage
+
+    // LOGIKA PROSES UPLOAD INTEGRASI FILE & TEXT DATABASE
+    function handleUpload(event) {
+        event.preventDefault();
+        
+        const btnSubmit = document.getElementById('btn-submit');
+        const fileGambar = document.getElementById('file-thumb-input').files[0];
+        
+        if(!fileGambar) {
+            alert("Silakan pilih file gambar akomodasi Anda terlebih dahulu!");
+            return;
+        }
+
+        // Kunci tombol biar owner tidak klik berkali-kali saat proses upload
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = "Sedang Mengunggah Gambar & Data... ⏳";
+
+        // 1. Unggah File Gambar Mentah ke Firebase Storage
+        const namaFileUnik = 'properti_images/' + Date.now() + '_' + fileGambar.name;
+        const storageRef = storage.ref(namaFileUnik);
+
+        storageRef.put(fileGambar)
+            .then((snapshot) => {
+                // 2. Jika sukses upload, minta link download publiknya
+                return snapshot.ref.getDownloadURL();
+            })
+            .then((downloadURL) => {
+                // 3. Simpan URL link tersebut bersama teks form lainnya ke Realtime Database
+                const dataProperti = {
+                    title: document.getElementById('meta-title').value,
+                    creator: document.getElementById('meta-creator').value,
+                    city: document.getElementById('meta-city').value,
+                    roomType: document.getElementById('meta-access').value, // Disamakan dengan index.html (roomType)
+                    price: parseInt(document.getElementById('meta-price').value) || 0,
+                    regulasi: document.getElementById('meta-regulasi').value,
+                    tags: document.getElementById('meta-tags').value,
+                    duration: document.getElementById('meta-duration').value,
+                    phone: document.getElementById('meta-phone').value,
+                    booking: document.getElementById('meta-booking').value,
+                    desc: document.getElementById('meta-desc').value,
+                    maps: document.getElementById('meta-maps').value,
+                    img: downloadURL, // <-- Hasil link resmi dari server Firebase Storage
+                    statusSistem: "AKTIF"
+                };
+
+                return db.ref('properties').push(dataProperti);
+            })
+            .then(() => {
+                alert("Selamat! Properti Anda berhasil terdaftar secara real-time.");
+                document.getElementById('upload-form').reset();
+            })
+            .catch((error) => {
+                alert("Gagal memproses pendaftaran: " + error.message);
+                console.error(error);
+            })
+            .finally(() => {
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "PROSES UPLOAD PROPERTI";
+            });
+    }
+
+    // Ambil & Tampilkan List Properti Kepunyaan Owner Secara Real-Time di Bawah Form
+    db.ref('properties').on('value', (snapshot) => {
+        const ownerGrid = document.getElementById('owner-catalog-grid');
+        if(!ownerGrid) return;
+        
+        ownerGrid.innerHTML = "";
+
+        if(!snapshot.exists()){
+            ownerGrid.innerHTML = `<p style="color: #8A8F98; grid-column:1/-1; text-align:center;">Belum ada properti terdaftar.</p>`;
+            return;
+        }
+
+        snapshot.forEach((child) => {
+            const key = child.key;
+            const item = child.val();
+
+            ownerGrid.innerHTML += `
+                <div class="property-card" style="padding: 10px; background:#191B26;">
+                    <img src="${item.img || 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500'}" style="width:100%; height:130px; object-fit:cover; border-radius:4px;">
+                    <h3 style="font-size:15px; margin: 8px 0 4px 0; color:#fff;">${item.title || 'Tanpa Nama'}</h3>
+                    <p style="font-size:12px; color:#8A8F98; margin:0;">ID Creator: ${item.creator || '-'}</p>
+                    <p style="font-size:13px; color:#66FCF1; font-weight:bold; margin-top:5px;">Rp ${(item.price || 0).toLocaleString('id-ID')}/malam</p>
+                </div>
+            `;
+        });
+    });
+    </script>
+
+    </body>
 </html>
