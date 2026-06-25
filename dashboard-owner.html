@@ -144,16 +144,33 @@
                         Contoh: <code style="color:#66FCF1; background:#1a1a2e; padding:1px 5px; border-radius:3px;">https://drive.google.com/file/d/ID_FILE/preview</code>
                     </div>
 
-                    <input type="url" id="meta-video-url" placeholder="https://www.youtube.com/embed/KODE_VIDEO  atau  https://drive.google.com/file/d/ID/preview"
-                        style="width: 100%; color: #fff; background: #111; padding: 10px; border: 1px solid #232631; border-radius: 4px; font-size: 13px; box-sizing:border-box;"
-                        oninput="previewVideoUrl(this.value)">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; align-items: start;">
+                        <!-- Kolom kiri: Upload file langsung -->
+                        <div>
+                            <label style="color: #8A8F98; font-size: 12px; display:block; margin-bottom:5px;">📂 Upload File Video Langsung (maks. 5MB)</label>
+                            <input type="file" id="file-video" accept="video/*"
+                                style="width:100%; color:#fff; background:#111; padding:8px; border:1px solid #232631; border-radius:4px; font-size:12px; box-sizing:border-box;"
+                                onchange="previewVideoFile(this)">
+                            <div id="prev-video-file" style="display:none; margin-top:8px;">
+                                <video id="video-file-player" controls style="width:100%; max-height:120px; border-radius:4px; border:1px solid #66FCF1;"></video>
+                            </div>
+
+                        </div>
+                        <!-- Kolom kanan: Link URL -->
+                        <div>
+                            <label style="color: #8A8F98; font-size: 12px; display:block; margin-bottom:5px;">🔗 — atau — Link YouTube / Google Drive (tanpa batas ukuran)</label>
+                            <input type="url" id="meta-video-url" placeholder="https://www.youtube.com/embed/KODE_VIDEO"
+                                style="width:100%; color:#fff; background:#111; padding:10px; border:1px solid #232631; border-radius:4px; font-size:13px; box-sizing:border-box;"
+                                oninput="previewVideoUrl(this.value)">
+                        </div>
+                    </div>
 
                     <!-- Preview iframe live -->
                     <div id="prev-video-url" style="display:none; margin-top:10px;">
                         <p style="color:#8A8F98; font-size:11px; margin:0 0 5px 0;">Preview Video:</p>
                         <iframe id="iframe-video-preview" src="" style="width:100%; height:160px; border:1px solid #66FCF1; border-radius:4px;" allowfullscreen></iframe>
                     </div>
-                    <small style="color:#8A8F98; display:block; margin-top:6px;">⚠️ Video ukuran berapapun bisa dipakai asalkan menggunakan link YouTube atau Google Drive — tidak ada batasan ukuran.</small>
+
                 </div>
             </div>
 
@@ -222,6 +239,15 @@
         box.style.display = 'block';
     }
 
+    function previewVideoFile(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        const box = document.getElementById('prev-video-file');
+        box.style.display = 'block';
+        document.getElementById('video-file-player').src = url;
+    }
+
     function previewVideoUrl(url) {
         const box = document.getElementById('prev-video-url');
         if (!url || (!url.includes('youtube.com') && !url.includes('drive.google.com'))) {
@@ -284,8 +310,27 @@
                 bacaFileBase64('file-foto3', 'Foto Galeri 3', 0.5),
             ]);
 
-            // 3. Video: ambil dari URL input langsung
+            // 3. Video: prioritaskan URL, fallback ke upload file
             let videoFinal = document.getElementById('meta-video-url').value.trim() || null;
+            if (!videoFinal) {
+                const videoFile = document.getElementById('file-video') && document.getElementById('file-video').files[0];
+                if (videoFile) {
+                    const sizeMB = videoFile.size / 1024 / 1024;
+                    if (sizeMB > 5) {
+                        alert('❌ File video terlalu besar (' + sizeMB.toFixed(2) + 'MB). Maks. 5MB.\nGunakan link YouTube/Google Drive untuk video besar.');
+                        btnSubmit.disabled = false;
+                        btnSubmit.innerText = 'PROSES UPLOAD PROPERTI';
+                        return;
+                    }
+                    btnSubmit.innerText = 'Mengkonversi video... ⏳';
+                    videoFinal = await new Promise((res, rej) => {
+                        const r = new FileReader();
+                        r.readAsDataURL(videoFile);
+                        r.onload = () => res(r.result);
+                        r.onerror = () => rej('Gagal baca video.');
+                    });
+                }
+            }
 
             // 4. Susun data properti lengkap
             btnSubmit.innerText = "Menyimpan ke database... ⏳";
