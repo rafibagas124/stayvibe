@@ -107,23 +107,23 @@
             <div style="display: flex; flex-wrap: wrap; gap: 20px;">
                 <div style="flex: 1.2; min-width: 320px;">
                     <div id="media-preview-text" style="width: 100%; height: 260px; background: #111; border-radius: 6px; overflow: hidden; margin-bottom: 15px; border: 1px solid #232631;">
-                        </div>
+                    </div>
                     <p id="view-desc" style="color: #8A8F98; line-height: 1.6; margin-bottom: 15px; font-size: 14px; text-align: justify;">Deskripsi properti lengkap...</p>
                     <div id="view-maps" style="width:100%; height:180px; background:#111; border-radius:6px; overflow:hidden; border: 1px solid #232631;">
-                        </div>
+                    </div>
                 </div>
                 
                 <div style="flex: 1; min-width: 280px; background: #11121a; padding: 15px; border-radius: 6px; border: 1px solid #232631; display: flex; flex-direction: column; justify-content: space-between;">
                     <div>
                         <h3 style="color: #66FCF1; font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #232631; padding-bottom: 5px;">📊 Spesifikasi & Detail</h3>
                         <div id="metadata-specs" style="font-size: 13px; color: #b3b9c1; line-height: 1.8;">
-                            </div>
+                        </div>
                         
                         <h3 style="color: #66FCF1; font-size: 15px; margin-top: 15px; margin-bottom: 10px;">⚡ Hubungi & Transaksi</h3>
                         <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px;">
                             <a id="btn-call" href="#" target="_blank" class="btn-neon" style="text-align: center; background: #25D366; color: #fff; border-color: #25D366; padding: 10px; font-size: 12px; border-radius: 4px; text-decoration: none; font-weight: bold; letter-spacing: 0.5px;">💬 WHATSAPP PETUGAS</a>
                             <div id="booking-links-container" style="display: flex; flex-direction: column; gap: 6px;">
-                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -143,7 +143,7 @@
                         
                         <h4 style="color: #66FCF1; font-size: 13px; margin-top: 10px; margin-bottom: 5px;">Ulasan Terkini:</h4>
                         <div id="reviews-container" style="max-height: 110px; overflow-y: auto; background: #191B26; padding: 8px; border-radius: 4px; border: 1px solid #232631; font-size: 12px; line-height: 1.5;">
-                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -198,9 +198,12 @@
 
             totalTampil++;
 
+            // FIX: Membaca path gambar dinamis dari property owner atau menggunakan fallback terarah
+            const gambarFinal = item.img || 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500';
+
             gridContainer.innerHTML += `
                 <div class="property-card" onclick="openPropertyModal('${key}')">
-                    <img src="${item.img || 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500'}" style="width:100%; height:180px; object-fit:cover;">
+                    <img src="${gambarFinal}" style="width:100%; height:180px; object-fit:cover;" onerror="this.src='https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500'">
                     <div class="property-info">
                         <h3>${item.title || 'Tanpa Nama'}</h3>
                         <p>📍 ${item.city || '-'} | Kategori: ${item.regulasi || 'Umum'} - ${item.roomType || 'Standard'}</p>
@@ -227,8 +230,9 @@
         document.getElementById('view-title').innerText = item.title;
         document.getElementById('view-desc').innerText = item.desc || "Tidak ada deskripsi tambahan.";
         
-        // Pemuatan Gambar Utama Terstruktur
-        document.getElementById('media-preview-text').innerHTML = `<img src="${item.img || 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500'}" style="width:100%; height:100%; object-fit:cover;">`;
+        // Pemuatan Gambar/Video Dinamis yang Dimasukkan Owner
+        const gambarFinal = item.img || 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500';
+        document.getElementById('media-preview-text').innerHTML = `<img src="${gambarFinal}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500'">`;
 
         // Pemuatan Google Maps Iframe / Koordinat
         const mapsContainer = document.getElementById('view-maps');
@@ -269,7 +273,7 @@
         // Tampilkan Spesifikasi Kamar Lengkap
         document.getElementById('metadata-specs').innerHTML = `
             <p><strong>Kota:</strong> ${item.city || '-'}</p>
-            <p><strong>Tipe Bed:</strong> ${item.roomType || item.roomType || '-'}</p>
+            <p><strong>Tipe Bed:</strong> ${item.roomType || '-'}</p>
             <p><strong>Regulasi:</strong> ${item.regulasi || 'Umum'}</p>
             <p><strong>Fasilitas:</strong> ${item.tags || '-'}</p>
             <p><strong>Durasi Tour:</strong> ${item.duration || '-'}</p>
@@ -332,8 +336,46 @@
             modal.style.display = "none";
         }
     }
+
+    // Logika Pencarian Sederhana Lokal Statis
+    function searchData() {
+        const query = document.getElementById('search-input').value.toLowerCase().trim();
+        const cityFilter = document.getElementById('filter-city').value.toLowerCase().trim();
+        const typeFilter = document.getElementById('filter-type').value;
+        const gridContainer = document.getElementById('catalog-grid');
+        
+        gridContainer.innerHTML = "";
+        let totalTampil = 0;
+
+        Object.keys(globalProperties).forEach(key => {
+            const item = globalProperties[key];
+            if (item.statusSistem === "BLACKLIST") return;
+
+            const matchesQuery = !query || item.title.toLowerCase().includes(query) || (item.tags && item.tags.toLowerCase().includes(query));
+            const matchesCity = !cityFilter || (item.city && item.city.toLowerCase().includes(cityFilter));
+            const matchesType = !typeFilter || item.regulasi === typeFilter;
+
+            if (matchesQuery && matchesCity && matchesType) {
+                totalTampil++;
+                const gambarFinal = item.img || 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500';
+                gridContainer.innerHTML += `
+                    <div class="property-card" onclick="openPropertyModal('${key}')">
+                        <img src="${gambarFinal}" style="width:100%; height:180px; object-fit:cover;" onerror="this.src='https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500'">
+                        <div class="property-info">
+                            <h3>${item.title || 'Tanpa Nama'}</h3>
+                            <p>📍 ${item.city || '-'} | Kategori: ${item.regulasi || 'Umum'} - ${item.roomType || 'Standard'}</p>
+                            <div class="property-price">Rp ${(item.price || 0).toLocaleString('id-ID')}/malam</div>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        if (totalTampil === 0) {
+            gridContainer.innerHTML = `<p style="color: #8A8F98; text-align: center; grid-column: 1/-1;">Properti tidak ditemukan.</p>`;
+        }
+    }
     </script>
 
-    <script src="script.js"></script>
-</body>
+    </body>
 </html>

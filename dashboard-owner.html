@@ -76,25 +76,17 @@
                 <input type="text" id="meta-maps" required placeholder="Masukkan tautan koordinat lokasi Google Maps">
             </div>
 
-            <div class="media-upload-section">
-                <h4>📁 Unggah Berkas Media Properti</h4>
+            <div class="media-upload-section" style="margin-top: 20px; background: #191B26; padding: 20px; border-radius: 6px; border: 1px solid #232631;">
+                <h4 style="color: #66FCF1; margin-bottom: 10px;">📁 Tautan Media Properti</h4>
                 <div class="upload-row">
-                    <div class="media-box">
-                        <label>1. Thumbnail Foto (.jpg)</label>
-                        <input type="file" id="file-thumb" accept="image/*">
-                    </div>
-                    <div class="media-box">
-                        <label>2. Foto Detail (.png)</label>
-                        <input type="file" id="file-image" accept="image/*">
-                    </div>
-                    <div class="media-box">
-                        <label>3. Video Virtual Tour (.mp4)</label>
-                        <input type="file" id="file-video" accept="video/*">
+                    <div class="media-box" style="width: 100%;">
+                        <label style="color: #fff; font-size: 14px;">Link URL / Alamat Gambar Properti (Thumbnail)</label>
+                        <input type="text" id="file-thumb" placeholder="Contoh: https://images.unsplash.com/... atau assets/gambar-hotel.jpg" style="width: 100%; background: #111; color: #fff; border: 1px solid #232631; padding: 12px; border-radius: 4px; margin-top: 5px; font-size: 13px;">
                     </div>
                 </div>
             </div>
 
-            <button type="submit" class="btn-neon btn-block" style="background: #66FCF1; color: #111;">PROSES UPLOAD PROPERTI</button>
+            <button type="submit" class="btn-neon btn-block" style="background: #66FCF1; color: #111; margin-top: 25px; padding: 15px; font-weight: bold; width: 100%; cursor: pointer;">PROSES UPLOAD PROPERTI</button>
         </form>
     </section>
 
@@ -102,8 +94,7 @@
         <h2 class="section-title">Manajemen / Daftar Properti Anda</h2>
         <p style="color: #8A8F98; margin-bottom: 20px;">Gunakan verifikasi ID Pemilik di bawah untuk mengelola data properti yang sudah terdaftar.</p>
         
-        <div class="grid" id="owner-catalog-grid">
-            </div>
+        <div class="grid" id="owner-catalog-grid"></div>
     </section>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
