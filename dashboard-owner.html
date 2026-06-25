@@ -72,8 +72,30 @@
             </div>
 
             <div class="form-group" style="margin-top: 15px;">
-                <label>Link Google Maps Embed / URL Koordinat</label>
-                <input type="text" id="meta-maps" required placeholder="Masukkan tautan koordinat lokasi Google Maps">
+                <label>Link Google Maps Embed / URL Lokasi</label>
+
+                <!-- Panduan cara dapat link embed -->
+                <div style="background:#111; border-left:3px solid #66FCF1; border-radius:4px; padding:12px; margin-bottom:10px; font-size:12px; color:#8A8F98; line-height:1.8;">
+                    <strong style="color:#66FCF1; display:block; margin-bottom:6px;">📌 Cara mendapatkan link Maps yang benar:</strong>
+                    <strong style="color:#fff;">Cara 1 — Link Share biasa (paling mudah):</strong><br>
+                    Buka Google Maps → cari lokasi → klik <em>Bagikan</em> → copy link-nya<br>
+                    Contoh: <code style="color:#66FCF1; background:#1a1a2e; padding:1px 5px; border-radius:3px;">https://maps.app.goo.gl/xxxxx</code><br><br>
+                    <strong style="color:#fff;">Cara 2 — Link Embed (paling akurat):</strong><br>
+                    Buka Google Maps → cari lokasi → klik <em>Bagikan</em> → <em>Sematkan Peta</em> → copy bagian <code style="color:#66FCF1; background:#1a1a2e; padding:1px 5px; border-radius:3px;">src="..."</code> dari iframe<br>
+                    Contoh: <code style="color:#66FCF1; background:#1a1a2e; padding:1px 5px; border-radius:3px;">https://www.google.com/maps/embed?pb=!1m18...</code><br><br>
+                    <strong style="color:#fff;">Cara 3 — Koordinat saja:</strong><br>
+                    Contoh: <code style="color:#66FCF1; background:#1a1a2e; padding:1px 5px; border-radius:3px;">-6.917464, 107.619123</code>
+                </div>
+
+                <input type="text" id="meta-maps" required placeholder="Contoh: https://maps.app.goo.gl/xxx atau -6.917, 107.619"
+                    style="width:100%; background:#111; color:#fff; border:1px solid #232631; padding:10px; border-radius:4px; font-size:13px; box-sizing:border-box;"
+                    oninput="previewMaps(this.value)">
+
+                <!-- Preview maps live -->
+                <div id="prev-maps" style="display:none; margin-top:10px;">
+                    <p style="color:#8A8F98; font-size:11px; margin:0 0 5px 0;">Preview Lokasi:</p>
+                    <iframe id="iframe-maps-preview" src="" style="width:100%; height:180px; border:1px solid #66FCF1; border-radius:4px;" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
             </div>
 
             <div class="media-upload-section" style="margin-top: 20px; background: #191B26; padding: 20px; border-radius: 6px; border: 1px solid #232631;">
@@ -111,22 +133,27 @@
 
                 <!-- INPUT 3: VIDEO TOUR -->
                 <div>
-                    <label style="color: #fff; font-size: 14px; display: block; margin-bottom: 5px;">🎬 Video Tour Properti <span style="color:#8A8F98;">(Opsional)</span></label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start;">
-                        <div>
-                            <label style="color: #8A8F98; font-size: 12px; display:block; margin-bottom:4px;">Upload File Video (maks. 5MB)</label>
-                            <input type="file" id="file-video" accept="video/*" style="width: 100%; color: #fff; background: #111; padding: 8px; border: 1px solid #232631; border-radius: 4px; font-size: 12px;" onchange="previewVideo(this)">
-                            <div id="prev-video" style="display:none; margin-top: 8px;">
-                                <video controls style="width:100%; border-radius:4px; border:1px solid #66FCF1; max-height:120px;"></video>
-                            </div>
-                        </div>
-                        <div>
-                            <label style="color: #8A8F98; font-size: 12px; display:block; margin-bottom:4px;">— atau — Link YouTube / Google Drive</label>
-                            <input type="url" id="meta-video-url" placeholder="https://youtube.com/embed/..." style="width: 100%; color: #fff; background: #111; padding: 10px; border: 1px solid #232631; border-radius: 4px; font-size: 13px; box-sizing:border-box;">
-                            <small style="color: #8A8F98; font-size:11px; margin-top:4px; display:block;">Pakai link <strong>embed</strong> YouTube. Contoh: https://www.youtube.com/embed/KODE_VIDEO</small>
-                        </div>
+                    <label style="color: #fff; font-size: 14px; display: block; margin-bottom: 8px;">🎬 Video Tour Properti <span style="color:#8A8F98;">(Opsional)</span></label>
+
+                    <!-- Panduan cara dapat link -->
+                    <div style="background:#111; border:1px solid #232631; border-radius:6px; padding:14px; margin-bottom:12px; font-size:12px; color:#8A8F98; line-height:1.8;">
+                        <strong style="color:#66FCF1; display:block; margin-bottom:6px;">📖 Cara mendapatkan link video:</strong>
+                        <strong style="color:#fff;">YouTube:</strong> Buka video → Klik <em>Share / Bagikan</em> → <em>Embed</em> → copy bagian <code style="color:#66FCF1; background:#1a1a2e; padding:1px 5px; border-radius:3px;">src="..."</code> saja<br>
+                        Contoh: <code style="color:#66FCF1; background:#1a1a2e; padding:1px 5px; border-radius:3px;">https://www.youtube.com/embed/KODE_VIDEO</code><br><br>
+                        <strong style="color:#fff;">Google Drive:</strong> Upload video → Klik kanan → <em>Dapatkan link</em> → ubah jadi Anyone with link → copy ID file-nya<br>
+                        Contoh: <code style="color:#66FCF1; background:#1a1a2e; padding:1px 5px; border-radius:3px;">https://drive.google.com/file/d/ID_FILE/preview</code>
                     </div>
-                    <small style="color: #8A8F98; display: block; margin-top: 6px;">⚠️ Jika kedua diisi, <strong style="color:#66FCF1;">link URL diprioritaskan</strong> (lebih hemat kuota Firebase).</small>
+
+                    <input type="url" id="meta-video-url" placeholder="https://www.youtube.com/embed/KODE_VIDEO  atau  https://drive.google.com/file/d/ID/preview"
+                        style="width: 100%; color: #fff; background: #111; padding: 10px; border: 1px solid #232631; border-radius: 4px; font-size: 13px; box-sizing:border-box;"
+                        oninput="previewVideoUrl(this.value)">
+
+                    <!-- Preview iframe live -->
+                    <div id="prev-video-url" style="display:none; margin-top:10px;">
+                        <p style="color:#8A8F98; font-size:11px; margin:0 0 5px 0;">Preview Video:</p>
+                        <iframe id="iframe-video-preview" src="" style="width:100%; height:160px; border:1px solid #66FCF1; border-radius:4px;" allowfullscreen></iframe>
+                    </div>
+                    <small style="color:#8A8F98; display:block; margin-top:6px;">⚠️ Video ukuran berapapun bisa dipakai asalkan menggunakan link YouTube atau Google Drive — tidak ada batasan ukuran.</small>
                 </div>
             </div>
 
@@ -175,13 +202,34 @@
         reader.readAsDataURL(file);
     }
 
-    function previewVideo(input) {
-        const file = input.files[0];
-        if (!file) return;
-        const url = URL.createObjectURL(file);
-        const box = document.getElementById('prev-video');
+    function buildEmbedUrl(url) {
+        if (!url) return null;
+        url = url.trim();
+        if (url.includes('maps/embed') || url.includes('maps.google.com/maps?')) return url;
+        // Koordinat lat,lng
+        const coordMatch = url.match(/^([\d.\-]+)[,\s]+([\d.\-]+)$/);
+        if (coordMatch) return `https://www.google.com/maps?q=${coordMatch[1]},${coordMatch[2]}&output=embed`;
+        // Link share maps.app.goo.gl atau maps.google.com/place
+        if (url.startsWith('http')) return `https://www.google.com/maps?q=${encodeURIComponent(url)}&output=embed`;
+        return null;
+    }
+
+    function previewMaps(val) {
+        const box = document.getElementById('prev-maps');
+        const embedUrl = buildEmbedUrl(val);
+        if (!embedUrl) { box.style.display = 'none'; return; }
+        document.getElementById('iframe-maps-preview').src = embedUrl;
         box.style.display = 'block';
-        box.querySelector('video').src = url;
+    }
+
+    function previewVideoUrl(url) {
+        const box = document.getElementById('prev-video-url');
+        if (!url || (!url.includes('youtube.com') && !url.includes('drive.google.com'))) {
+            box.style.display = 'none';
+            return;
+        }
+        document.getElementById('iframe-video-preview').src = url;
+        box.style.display = 'block';
     }
 
     // -------------------------------------------------------
@@ -236,27 +284,8 @@
                 bacaFileBase64('file-foto3', 'Foto Galeri 3', 0.5),
             ]);
 
-            // 3. Video: prioritaskan URL, fallback ke file Base64
+            // 3. Video: ambil dari URL input langsung
             let videoFinal = document.getElementById('meta-video-url').value.trim() || null;
-            if (!videoFinal) {
-                const videoFile = document.getElementById('file-video').files[0];
-                if (videoFile) {
-                    const sizeMB = videoFile.size / 1024 / 1024;
-                    if (sizeMB > 5) {
-                        alert(`❌ File video terlalu besar (${sizeMB.toFixed(2)}MB). Batas maks. 5MB.\nDisarankan upload ke YouTube lalu gunakan link embed.`);
-                        btnSubmit.disabled = false;
-                        btnSubmit.innerText = "PROSES UPLOAD PROPERTI";
-                        return;
-                    }
-                    btnSubmit.innerText = "Mengkonversi video... ⏳ (mungkin sebentar)";
-                    videoFinal = await new Promise((res, rej) => {
-                        const r = new FileReader();
-                        r.readAsDataURL(videoFile);
-                        r.onload  = () => res(r.result);
-                        r.onerror = () => rej("Gagal baca video.");
-                    });
-                }
-            }
 
             // 4. Susun data properti lengkap
             btnSubmit.innerText = "Menyimpan ke database... ⏳";
@@ -351,11 +380,5 @@
         }
     }
     </script>
-<<<<<<< HEAD
-
-    </body>
-</html>
-=======
 </body>
 </html>
->>>>>>> 887e449 (Switch ke sistem upload Base64 bypass Firebase Storage)
