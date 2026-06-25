@@ -77,11 +77,12 @@
             </div>
 
             <div class="media-upload-section" style="margin-top: 20px; background: #191B26; padding: 20px; border-radius: 6px; border: 1px solid #232631;">
-                <h4 style="color: #66FCF1; margin-bottom: 10px;">📁 File Media Properti (Direct Upload)</h4>
+                <h4 style="color: #66FCF1; margin-bottom: 10px;">📁 File Media Properti (Direct File)</h4>
                 <div class="upload-row">
                     <div class="media-box" style="width: 100%;">
                         <label style="color: #fff; font-size: 14px; display: block; margin-bottom: 5px;">Pilih Foto Gambar Utama / Thumbnail Properti</label>
                         <input type="file" id="file-thumb-input" accept="image/*" required style="width: 100%; color: #fff; background: #111; padding: 10px; border: 1px solid #232631; border-radius: 4px; font-size: 13px;">
+                        <small style="color: #8A8F98; display: block; margin-top: 5px;">Tips: Gunakan foto berukuran kecil (< 1MB) agar loading penyimpanan kilat.</small>
                     </div>
                 </div>
             </div>
@@ -99,14 +100,14 @@
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script> <script>
+    
+    <script>
     // Konfigurasi Terpusat STAYVIBE
     const firebaseConfig = {
         apiKey: "AIzaSyDiB5OzbszFLTI9cGulNVYoywp7_0f3Dkc",
         authDomain: "stayvibe-f52d4.firebaseapp.com",
         databaseURL: "https://stayvibe-f52d4-default-rtdb.firebaseio.com", 
         projectId: "stayvibe-f52d4",
-        storageBucket: "stayvibe-f52d4.firebasestorage.app",
         messagingSenderId: "866844470458",
         appId: "1:866844470458:web:b84ff7faf9a746b43da683",
         measurementId: "G-CCN7FW8Q78"
@@ -116,9 +117,8 @@
         firebase.initializeApp(firebaseConfig);
     }
     const db = firebase.database();
-    const storage = firebase.storage(); // Inisialisasi Storage
 
-    // LOGIKA PROSES UPLOAD INTEGRASI FILE & TEXT DATABASE
+    // LOGIKA PROSES UPLOAD DENGAN METODE BASE64 CONVERSION
     function handleUpload(event) {
         event.preventDefault();
         
@@ -130,55 +130,57 @@
             return;
         }
 
-        // Kunci tombol biar owner tidak klik berkali-kali saat proses upload
         btnSubmit.disabled = true;
-        btnSubmit.innerText = "Sedang Mengunggah Gambar & Data... ⏳";
+        btnSubmit.innerText = "Memproses Gambar & Data... ⏳";
 
-        // 1. Unggah File Gambar Mentah ke Firebase Storage
-        const namaFileUnik = 'properti_images/' + Date.now() + '_' + fileGambar.name;
-        const storageRef = storage.ref(namaFileUnik);
+        // Membaca file dan mengubahnya menjadi string teks Base64
+        const reader = new FileReader();
+        reader.readAsDataURL(fileGambar);
+        
+        reader.onload = function () {
+            const base64ImageString = reader.result; // Ini hasil string teks gambarnya
 
-        storageRef.put(fileGambar)
-            .then((snapshot) => {
-                // 2. Jika sukses upload, minta link download publiknya
-                return snapshot.ref.getDownloadURL();
-            })
-            .then((downloadURL) => {
-                // 3. Simpan URL link tersebut bersama teks form lainnya ke Realtime Database
-                const dataProperti = {
-                    title: document.getElementById('meta-title').value,
-                    creator: document.getElementById('meta-creator').value,
-                    city: document.getElementById('meta-city').value,
-                    roomType: document.getElementById('meta-access').value, // Disamakan dengan index.html (roomType)
-                    price: parseInt(document.getElementById('meta-price').value) || 0,
-                    regulasi: document.getElementById('meta-regulasi').value,
-                    tags: document.getElementById('meta-tags').value,
-                    duration: document.getElementById('meta-duration').value,
-                    phone: document.getElementById('meta-phone').value,
-                    booking: document.getElementById('meta-booking').value,
-                    desc: document.getElementById('meta-desc').value,
-                    maps: document.getElementById('meta-maps').value,
-                    img: downloadURL, // <-- Hasil link resmi dari server Firebase Storage
-                    statusSistem: "AKTIF"
-                };
+            const dataProperti = {
+                title: document.getElementById('meta-title').value,
+                creator: document.getElementById('meta-creator').value,
+                city: document.getElementById('meta-city').value,
+                roomType: document.getElementById('meta-access').value, 
+                price: parseInt(document.getElementById('meta-price').value) || 0,
+                regulasi: document.getElementById('meta-regulasi').value,
+                tags: document.getElementById('meta-tags').value,
+                duration: document.getElementById('meta-duration').value,
+                phone: document.getElementById('meta-phone').value,
+                booking: document.getElementById('meta-booking').value,
+                desc: document.getElementById('meta-desc').value,
+                maps: document.getElementById('meta-maps').value,
+                img: base64ImageString, // <-- Disimpan dalam bentuk teks string di Realtime Database gratisan
+                statusSistem: "AKTIF"
+            };
 
-                return db.ref('properties').push(dataProperti);
-            })
-            .then(() => {
-                alert("Selamat! Properti Anda berhasil terdaftar secara real-time.");
-                document.getElementById('upload-form').reset();
-            })
-            .catch((error) => {
-                alert("Gagal memproses pendaftaran: " + error.message);
-                console.error(error);
-            })
-            .finally(() => {
-                btnSubmit.disabled = false;
-                btnSubmit.innerText = "PROSES UPLOAD PROPERTI";
-            });
+            // Langsung tembak ke Realtime Database tanpa lewat Storage berbayar
+            db.ref('properties').push(dataProperti)
+                .then(() => {
+                    alert("Selamat! Properti Anda berhasil terdaftar secara real-time via Base64.");
+                    document.getElementById('upload-form').reset();
+                })
+                .catch((error) => {
+                    alert("Gagal memproses pendaftaran: " + error.message);
+                    console.error(error);
+                })
+                .finally(() => {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerText = "PROSES UPLOAD PROPERTI";
+                });
+        };
+
+        reader.onerror = function (error) {
+            alert("Gagal membaca file gambar lokal.");
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = "PROSES UPLOAD PROPERTI";
+        };
     }
 
-    // Ambil & Tampilkan List Properti Kepunyaan Owner Secara Real-Time di Bawah Form
+    // Ambil & Tampilkan List Properti
     db.ref('properties').on('value', (snapshot) => {
         const ownerGrid = document.getElementById('owner-catalog-grid');
         if(!ownerGrid) return;
@@ -191,11 +193,9 @@
         }
 
         snapshot.forEach((child) => {
-            const key = child.key;
             const item = child.val();
-
             ownerGrid.innerHTML += `
-                <div class="property-card" style="padding: 10px; background:#191B26;">
+                <div class="property-card" style="padding: 10px; background:#191B26; border-radius:6px;">
                     <img src="${item.img || 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500'}" style="width:100%; height:130px; object-fit:cover; border-radius:4px;">
                     <h3 style="font-size:15px; margin: 8px 0 4px 0; color:#fff;">${item.title || 'Tanpa Nama'}</h3>
                     <p style="font-size:12px; color:#8A8F98; margin:0;">ID Creator: ${item.creator || '-'}</p>
@@ -205,6 +205,11 @@
         });
     });
     </script>
+<<<<<<< HEAD
 
     </body>
 </html>
+=======
+</body>
+</html>
+>>>>>>> 887e449 (Switch ke sistem upload Base64 bypass Firebase Storage)
