@@ -230,45 +230,64 @@
         document.getElementById('view-title').innerText = item.title;
         document.getElementById('view-desc').innerText = item.desc || "Tidak ada deskripsi tambahan.";
         
-        // Pemuatan Gambar/Video Dinamis yang Dimasukkan Owner
+        // ── MEDIA: Thumbnail + Galeri Foto + Video Tour ──────────────────
         const gambarFinal = item.img || 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500';
-        document.getElementById('media-preview-text').innerHTML = `<img src="${gambarFinal}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500'">`;
+        const mediaBox = document.getElementById('media-preview-text');
+        mediaBox.style.height = 'auto';
 
-        // Pemuatan Google Maps - handle semua format URL
+        let mediaHTML = `<img id="main-photo" src="${gambarFinal}" style="width:100%; height:220px; object-fit:cover; display:block; border-radius:6px 6px 0 0;" onerror="this.src='https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500'">`;
+
+        // Galeri foto (strip thumbnail klikable)
+        if (item.galeri && item.galeri.length > 0) {
+            mediaHTML += `<div style="display:flex; gap:6px; padding:8px; background:#0d0d0d; overflow-x:auto;">`;
+            // Tambahkan thumbnail utama sebagai foto pertama di strip
+            mediaHTML += `<img src="${gambarFinal}" style="height:65px; min-width:90px; object-fit:cover; border-radius:4px; border:2px solid #66FCF1; cursor:pointer; flex-shrink:0;" onclick="document.getElementById('main-photo').src=this.src" onerror="this.style.display='none'">`;
+            item.galeri.forEach(foto => {
+                if (foto) mediaHTML += `<img src="${foto}" style="height:65px; min-width:90px; object-fit:cover; border-radius:4px; border:1px solid #232631; cursor:pointer; flex-shrink:0;" onclick="document.getElementById('main-photo').src=this.src" onerror="this.style.display='none'">`;
+            });
+            mediaHTML += `</div>`;
+        }
+
+        // Video Tour
+        if (item.video) {
+            const isYT = item.video.includes('youtube.com') || item.video.includes('youtu.be');
+            const isDrive = item.video.includes('drive.google.com');
+            const isDataUrl = item.video.startsWith('data:video');
+            if (isYT || isDrive) {
+                mediaHTML += `<div style="padding:8px; background:#0d0d0d; border-top:1px solid #232631;">
+                    <p style="color:#66FCF1; font-size:12px; margin:0 0 5px 0;">🎬 Video Tour:</p>
+                    <iframe src="${item.video}" style="width:100%; height:180px; border:0; border-radius:4px;" allowfullscreen loading="lazy"></iframe>
+                </div>`;
+            } else if (isDataUrl) {
+                mediaHTML += `<div style="padding:8px; background:#0d0d0d; border-top:1px solid #232631;">
+                    <p style="color:#66FCF1; font-size:12px; margin:0 0 5px 0;">🎬 Video Tour:</p>
+                    <video controls style="width:100%; max-height:180px; border-radius:4px;"><source src="${item.video}"></video>
+                </div>`;
+            }
+        }
+
+        mediaBox.innerHTML = mediaHTML;
+
+        // ── GOOGLE MAPS ───────────────────────────────────────────────────
         const mapsContainer = document.getElementById('view-maps');
         const mapsRaw = (item.maps || '').trim();
 
         function buildEmbedUrl(url) {
             if (!url) return null;
-            // Sudah embed langsung
-            if (url.includes('maps/embed') || url.includes('maps.google.com/maps?')) return url;
-            // Format /place/ → convert ke embed
-            const placeMatch = url.match(/place\/([^\/]+)\/@([\d.\-]+),([\d.\-]+)/);
-            if (placeMatch) return `https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d1000!2d${placeMatch[3]}!3d${placeMatch[2]}!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0!2s${encodeURIComponent(placeMatch[1])}!5e0!3m2!1sid!2sid!4v1`;
-            // Format koordinat saja: lat,lng
-            const coordMatch = url.match(/^([\d.\-]+)[,\s]+([\d.\-]+)$/);
-            if (coordMatch) return `https://www.google.com/maps?q=${coordMatch[1]},${coordMatch[2]}&output=embed`;
-            // Fallback: coba pakai URL apa adanya (mungkin sudah embed)
-            if (url.startsWith('http')) return url;
+            if (url.includes('maps/embed')) return url;
+            const coord = url.match(/^([\d.\-]+)[,\s]+([\d.\-]+)$/);
+            if (coord) return 'https://www.google.com/maps?q=' + coord[1] + ',' + coord[2] + '&output=embed';
+            if (url.startsWith('http')) return 'https://www.google.com/maps?q=' + encodeURIComponent(url) + '&output=embed';
             return null;
         }
 
         const embedUrl = buildEmbedUrl(mapsRaw);
         if (embedUrl) {
-            mapsContainer.innerHTML = `
-                <iframe src="${embedUrl}" 
-                    style="width:100%; height:100%; border:0;" 
-                    allowfullscreen="" loading="lazy"
-                    referrerpolicy="no-referrer-when-downgrade"
-                    onerror="this.parentElement.innerHTML='<div style=\'padding:20px;color:#8A8F98;font-size:13px;text-align:center;padding-top:50px;\'>📍 Peta tidak bisa dimuat.<br>Pastikan link Maps sudah benar.<br><a href=\'${mapsRaw}\' target=\'_blank\' style=\'color:#66FCF1;\'>Buka di Google Maps ↗</a></div>'"
-                ></iframe>`;
+            mapsContainer.innerHTML = '<iframe src="' + embedUrl + '" style="width:100%; height:100%; border:0;" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>';
         } else if (mapsRaw) {
-            mapsContainer.innerHTML = `<div style="padding:15px; color:#8A8F98; font-size:13px; text-align:center; padding-top:50px;">
-                📍 Lokasi: ${mapsRaw}<br>
-                <a href="https://www.google.com/maps/search/${encodeURIComponent(mapsRaw)}" target="_blank" style="color:#66FCF1; margin-top:8px; display:inline-block;">Buka di Google Maps ↗</a>
-            </div>`;
+            mapsContainer.innerHTML = '<div style="padding:15px; color:#8A8F98; font-size:13px; text-align:center; padding-top:50px;">📍 ' + mapsRaw + '<br><a href="https://www.google.com/maps/search/' + encodeURIComponent(mapsRaw) + '" target="_blank" style="color:#66FCF1; margin-top:8px; display:inline-block;">Buka di Google Maps ↗</a></div>';
         } else {
-            mapsContainer.innerHTML = `<div style="padding:15px; color:#8A8F98; font-size:13px; text-align:center; padding-top:50px;">📍 Lokasi belum disematkan</div>`;
+            mapsContainer.innerHTML = '<div style="padding:15px; color:#8A8F98; font-size:13px; text-align:center; padding-top:50px;">📍 Lokasi belum disematkan</div>';
         }
 
         // Tautan Kontak WhatsApp Otomatis
