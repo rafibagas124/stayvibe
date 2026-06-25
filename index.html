@@ -52,26 +52,23 @@
 </head>
 <body>
 
-    <!-- NAVBAR NAVIGATION -->
     <header class="navbar">
         <div class="logo">STAY<span>VIBE</span></div>
         <nav style="display: flex; align-items: center;">
             <a href="#home">Home</a>
             <a href="#catalog">Daftar Properti</a>
             <a href="#search">Cari Properti</a>
-            <a href="#viewer">Ulasan Properti</a>
             
-            <!-- MENU DROPDOWN BISNIS (Hanya Berisi Daftar Mitra Sesuai Aturan Hak Akses) -->
             <div class="dropdown">
                 <a href="#" style="color: #66FCF1; border: 1px solid #66FCF1; padding: 5px 15px; border-radius: 4px; display: inline-block;">💼 Bisnis ▼</a>
                 <div class="dropdown-content">
                     <a href="daftar-mitra.html">📝 Daftar Mitra</a>
+                    <a href="dashboard-owner.html">🏠 Dashboard Owner</a>
                 </div>
             </div>
         </nav>
     </header>
 
-    <!-- 1. HOME SECTION -->
     <section id="home" class="hero">
         <div class="hero-content">
             <h1>TEMUKAN PENGINAPAN TERBAIK DENGAN VIRTUAL TOUR</h1>
@@ -80,7 +77,6 @@
         </div>
     </section>
 
-    <!-- 2. DAFTAR & CARI PROPERTI SECTION -->
     <section id="catalog" class="container">
         <h2 class="section-title">Daftar & Cari Properti</h2>
         
@@ -98,90 +94,69 @@
         </div>
 
         <div class="grid" id="catalog-grid">
-            <!-- Menunggu data dari server Firebase -->
             <p style="color: #8A8F98; text-align: center; grid-column: 1/-1;">Memuat list hunian terbaru...</p>
         </div>
     </section>
 
-    <!-- 3. ULASAN PROPERTI (VIEWER COMPONENT) -->
-    <section id="viewer" class="container bg-dark-card">
-        <h2 class="section-title">Ulasan & Detail Properti</h2>
-        <div class="viewer-layout">
-            <div class="video-player">
-                <div class="screen-simulation">
-                    <span class="badge-status" id="view-regulasi">-</span>
-                    <p id="media-preview-text">🎬 [Silakan pilih properti pada daftar di atas]</p>
-                </div>
-                <div class="video-controls">
-                    <button>▶ PLAY VIRTUAL TOUR</button>
-                    <div class="timeline"></div>
-                    <span id="view-duration">00:00</span>
-                </div>
-                <div class="maps-simulation" id="view-maps">
-                    📍 Lokasi Google Maps Properti
-                </div>
-            </div>
+    <div id="property-modal" style="display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.85); padding-top: 40px;">
+        <div style="background-color: #191B26; margin: 2% auto; padding: 25px; border: 1px solid #66FCF1; width: 90%; max-width: 850px; border-radius: 8px; color: #fff; position: relative; box-shadow: 0 0 20px rgba(102, 252, 241, 0.2);">
+            <span onclick="closeModal()" style="position: absolute; right: 20px; top: 15px; color: #ff5a5f; font-size: 30px; font-weight: bold; cursor: pointer;">&times;</span>
             
-            <div class="audio-player">
-                <h3 id="view-title">Pilih Properti</h3>
-                <p id="view-desc" style="color: #8A8F98; margin: 10px 0; font-size: 14px;">Belum ada properti yang dipilih untuk dilihat detailnya.</p>
-                
-                <div class="action-buttons-group" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
-                    <a id="btn-call" href="#" target="_blank" class="btn-neon" style="text-align: center; background: #25D366; color: #fff; border-color: #25D366; font-weight: bold;">📞 HUBUNGI PETUGAS VIA WHATSAPP</a>
-                    <div id="booking-links-container" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <!-- Tombol booking dinamis disuntik di sini oleh JS -->
-                    </div>
-                </div>
-
-                <div class="metadata-display">
-                    <h3>📊 Spesifikasi Lengkap Properti</h3>
-                    <div id="metadata-specs">
-                        <p style="color: #8A8F98;">Data spesifikasi akan dimuat otomatis di sini.</p>
-                    </div>
-                </div>
-
-                <div class="review-section">
-                    <h3>⭐ Berikan Ulasan & Rating</h3>
-                    <div class="rating-input">
-                        <label>Rating:</label>
-                        <select id="input-star">
-                            <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
-                            <option value="4">⭐⭐⭐⭐ (4/5)</option>
-                            <option value="3">⭐⭐⭐ (3/5)</option>
-                            <option value="2">⭐⭐ (2/5)</option>
-                            <option value="1">⭐ (1/5)</option>
-                        </select>
-                    </div>
-                    <textarea id="input-comment" placeholder="Tulis ulasan Anda mengenai properti ini..."></textarea>
-                    
-                    <!-- FITUR UNGHAH FOTO TAMBAHAN OLEH USER -->
-                    <div style="margin-top: 12px; font-size: 13px; text-align: left;">
-                        <label style="color: #8A8F98; display: block; margin-bottom: 6px; font-weight: 500;">📸 Tambahkan Foto Kondisi Kamar/Lokasi (Opsional):</label>
-                        <input type="file" id="input-review-photo" accept="image/*" style="background: #11121a; color: #ffffff; border: 1px solid #232631; padding: 10px; border-radius: 4px; width: 100%; font-size: 12px; outline: none;">
-                    </div>
-
-                    <button class="btn-neon" onclick="submitReview()" style="width: 100%; margin-top: 15px; font-size: 12px;">KIRIM ULASAN</button>
-                    
-                    <div class="live-reviews">
-                        <h4>Ulasan Pengguna Terkini:</h4>
-                        <div id="reviews-container">
-                            <p style="color: #8A8F98; font-size: 12px;">Belum ada ulasan.</p>
+            <h2 id="view-title" style="color: #66FCF1; margin-bottom: 15px; font-size: 24px;">Nama Properti</h2>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                <div style="flex: 1.2; min-width: 320px;">
+                    <div id="media-preview-text" style="width: 100%; height: 260px; background: #111; border-radius: 6px; overflow: hidden; margin-bottom: 15px; border: 1px solid #232631;">
                         </div>
+                    <p id="view-desc" style="color: #8A8F98; line-height: 1.6; margin-bottom: 15px; font-size: 14px; text-align: justify;">Deskripsi properti lengkap...</p>
+                    <div id="view-maps" style="width:100%; height:180px; background:#111; border-radius:6px; overflow:hidden; border: 1px solid #232631;">
+                        </div>
+                </div>
+                
+                <div style="flex: 1; min-width: 280px; background: #11121a; padding: 15px; border-radius: 6px; border: 1px solid #232631; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <h3 style="color: #66FCF1; font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #232631; padding-bottom: 5px;">📊 Spesifikasi & Detail</h3>
+                        <div id="metadata-specs" style="font-size: 13px; color: #b3b9c1; line-height: 1.8;">
+                            </div>
+                        
+                        <h3 style="color: #66FCF1; font-size: 15px; margin-top: 15px; margin-bottom: 10px;">⚡ Hubungi & Transaksi</h3>
+                        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px;">
+                            <a id="btn-call" href="#" target="_blank" class="btn-neon" style="text-align: center; background: #25D366; color: #fff; border-color: #25D366; padding: 10px; font-size: 12px; border-radius: 4px; text-decoration: none; font-weight: bold; letter-spacing: 0.5px;">💬 WHATSAPP PETUGAS</a>
+                            <div id="booking-links-container" style="display: flex; flex-direction: column; gap: 6px;">
+                                </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 style="color: #66FCF1; font-size: 15px; margin-top: 10px; border-top: 1px solid #232631; padding-top: 10px; margin-bottom: 8px;">⭐ Berikan Ulasan</h3>
+                        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;">
+                            <select id="input-star" style="background:#191B26; color:#fff; border:1px solid #232631; padding:8px; border-radius:4px; font-size: 13px;">
+                                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                                <option value="4">⭐⭐⭐⭐ (4)</option>
+                                <option value="3">⭐⭐⭐ (3)</option>
+                                <option value="2">⭐⭐ (2)</option>
+                                <option value="1">⭐ (1)</option>
+                            </select>
+                            <input type="text" id="input-comment" placeholder="Tulis testimoni atau ulasan Anda..." style="background:#191B26; color:#fff; border:1px solid #232631; padding:8px; border-radius:4px; font-size:13px; outline: none;">
+                            <button onclick="submitReview()" style="background:#66FCF1; color:#111; border:none; padding:8px; font-weight:bold; border-radius:4px; cursor:pointer; font-size: 13px;">KIRIM ULASAN</button>
+                        </div>
+                        
+                        <h4 style="color: #66FCF1; font-size: 13px; margin-top: 10px; margin-bottom: 5px;">Ulasan Terkini:</h4>
+                        <div id="reviews-container" style="max-height: 110px; overflow-y: auto; background: #191B26; padding: 8px; border-radius: 4px; border: 1px solid #232631; font-size: 12px; line-height: 1.5;">
+                            </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
     <footer style="text-align: center; padding: 40px; color: #8A8F98; border-top: 1px solid #232631; margin-top: 50px;">
         STAYVIBE © 2026 - Platform Manajemen Akomodasi Publik Terintegrasi
     </footer>
 
-    <!-- Firebase Core & Realtime Database SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
-    <!-- KONFIGURASI DAN LOGIKA PENYARINGAN REAL-TIME (ANTI-BLACKLIST) -->
     <script>
     const firebaseConfig = {
         apiKey: "AIzaSyDiB5OzbszFLTI9cGulNVYoywp7_0f3Dkc",
@@ -198,10 +173,12 @@
     }
     const db = firebase.database();
 
-    // Jalankan pemantauan data properti real-time
+    let globalProperties = {};
+
+    // Ambil data properti real-time dari Firebase
     db.ref('properties').on('value', (snapshot) => {
         const gridContainer = document.getElementById('catalog-grid');
-        gridContainer.innerHTML = ""; // Bersihkan kontainer grid
+        gridContainer.innerHTML = ""; 
 
         if (!snapshot.exists()) {
             gridContainer.innerHTML = `<p style="color: #8A8F98; text-align: center; grid-column: 1/-1;">Belum ada properti yang tersedia saat ini.</p>`;
@@ -209,26 +186,24 @@
         }
 
         let totalTampil = 0;
+        globalProperties = snapshot.val(); // Simpan ke objek global agar bisa diakses pop-up modal
 
         snapshot.forEach((childSnapshot) => {
             const key = childSnapshot.key;
             const item = childSnapshot.val();
 
-            // 🚫 LOGIKA DETEKSI BLACKLIST TIM STAYVIBE:
-            // Jika statusSistem diset "BLACKLIST", lewati dan jangan render properti ini ke layar user
             if (item.statusSistem === "BLACKLIST") {
                 return; 
             }
 
             totalTampil++;
 
-            // Render komponen properti yang lolos sensor (Status LIVE / AKTIF)
             gridContainer.innerHTML += `
-                <div class="property-card" onclick="pilihDetailProperti('${key}')">
-                    <img src="${item.img || 'https://via.placeholder.com/350x200'}" style="width:100%; height:180px; object-fit:cover;">
+                <div class="property-card" onclick="openPropertyModal('${key}')">
+                    <img src="${item.img || 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500'}" style="width:100%; height:180px; object-fit:cover;">
                     <div class="property-info">
                         <h3>${item.title || 'Tanpa Nama'}</h3>
-                        <p>📍 ${item.city || '-'} | Kategori: ${item.type || 'Umum'}</p>
+                        <p>📍 ${item.city || '-'} | Kategori: ${item.regulasi || 'Umum'} - ${item.roomType || 'Standard'}</p>
                         <div class="property-price">Rp ${(item.price || 0).toLocaleString('id-ID')}/malam</div>
                     </div>
                 </div>
@@ -240,18 +215,125 @@
         }
     });
 
-    // Fungsi placeholder agar tidak error sebelum script.js eksternal milikmu dimuat
-    function pilihDetailProperti(id) {
-        if(typeof window.bukaDetailPropertiAsli === "function") {
-            window.bukaDetailPropertiAsli(id);
+    let currentModalPropertyId = "";
+
+    // FUNGSI UNTUK MEMBUKA MODAL BOX POP-UP DETAIL SECARA DINAMIS
+    function openPropertyModal(id) {
+        currentModalPropertyId = id;
+        const item = globalProperties[id];
+        if(!item) return;
+
+        document.getElementById('property-modal').style.display = "block";
+        document.getElementById('view-title').innerText = item.title;
+        document.getElementById('view-desc').innerText = item.desc || "Tidak ada deskripsi tambahan.";
+        
+        // Pemuatan Gambar Utama Terstruktur
+        document.getElementById('media-preview-text').innerHTML = `<img src="${item.img || 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500'}" style="width:100%; height:100%; object-fit:cover;">`;
+
+        // Pemuatan Google Maps Iframe / Koordinat
+        const mapsContainer = document.getElementById('view-maps');
+        if(item.maps && item.maps.includes("http")) {
+            mapsContainer.innerHTML = `<iframe src="${item.maps}" style="width:100%; height:100%; border:0;" allowfullscreen="" loading="lazy"></iframe>`;
         } else {
-            console.log("Membuka properti dengan ID:", id);
-            // Kode kelola viewer milik script.js kamu akan mengambil alih di sini
+            mapsContainer.innerHTML = `<div style="padding: 20px; color: #8A8F98; font-size: 13px; text-align: center; padding-top: 60px;">📍 Koordinat Lokasi: ${item.maps || 'Tidak disematkan'}</div>`;
+        }
+
+        // Tautan Kontak WhatsApp Otomatis
+        const phoneNo = item.phone ? item.phone : "";
+        let cleanPhone = phoneNo.replace(/[^0-9]/g, '');
+        if(cleanPhone.startsWith('0')) { cleanPhone = '62' + cleanPhone.slice(1); }
+        document.getElementById('btn-call').href = cleanPhone ? `https://wa.me/${cleanPhone}` : "#";
+
+        // Tautan Booking OTA Online Multi-Link
+        const bookingContainer = document.getElementById('booking-links-container');
+        bookingContainer.innerHTML = "";
+        if (item.booking) {
+            const linksArray = item.booking.split(',');
+            linksArray.forEach((linkUrl) => {
+                const cleanUrl = linkUrl.trim();
+                if(cleanUrl.includes("http")) {
+                    let platformName = "BOOKING SEKARANG";
+                    if(cleanUrl.toLowerCase().includes("traveloka")) platformName = "TRAVELOKA";
+                    else if(cleanUrl.toLowerCase().includes("reddoorz")) platformName = "REDDOORZ";
+                    else if(cleanUrl.toLowerCase().includes("agoda")) platformName = "AGODA";
+
+                    bookingContainer.innerHTML += `
+                        <a href="${cleanUrl}" target="_blank" class="btn-neon" style="text-align: center; background: #FF5A5F; color: #fff; border-color: #FF5A5F; font-size: 11px; padding: 8px; text-decoration: none; font-weight: bold; border-radius: 4px;">⚡ AMBIL DI ${platformName}</a>
+                    `;
+                }
+            });
+        } else {
+            bookingContainer.innerHTML = `<p style="color: #8A8F98; font-size: 12px; text-align: center;">Tautan OTA Belum Tersedia</p>`;
+        }
+
+        // Tampilkan Spesifikasi Kamar Lengkap
+        document.getElementById('metadata-specs').innerHTML = `
+            <p><strong>Kota:</strong> ${item.city || '-'}</p>
+            <p><strong>Tipe Bed:</strong> ${item.roomType || item.roomType || '-'}</p>
+            <p><strong>Regulasi:</strong> ${item.regulasi || 'Umum'}</p>
+            <p><strong>Fasilitas:</strong> ${item.tags || '-'}</p>
+            <p><strong>Durasi Tour:</strong> ${item.duration || '-'}</p>
+            <p style="color: #66FCF1; font-size:14px; margin-top:5px;"><strong>Harga:</strong> Rp ${(item.price || 0).toLocaleString('id-ID')}/malam</p>
+        `;
+
+        // Ambil ulasan real-time spesifik untuk properti ini
+        loadModalReviews(id);
+    }
+
+    function closeModal() {
+        document.getElementById('property-modal').style.display = "none";
+    }
+
+    // Fungsi Ambil Ulasan Real-Time di Dalam Modal Box
+    function loadModalReviews(propertyId) {
+        const reviewsContainer = document.getElementById('reviews-container');
+        db.ref(`reviews/${propertyId}`).on('value', (snapshot) => {
+            reviewsContainer.innerHTML = "";
+            if (!snapshot.exists()) {
+                reviewsContainer.innerHTML = `<p style="color: #8A8F98; font-size: 11px;">Belum ada ulasan untuk penginapan ini.</p>`;
+                return;
+            }
+            snapshot.forEach((child) => {
+                const rev = child.val();
+                reviewsContainer.innerHTML += `
+                    <div style="border-bottom: 1px solid #232631; padding: 6px 0; font-size: 12px;">
+                        <span style="color: #66FCF1; font-weight: bold;">${rev.star}</span>
+                        <p style="margin: 2px 0 0 0; color: #fff;">${rev.text}</p>
+                    </div>
+                `;
+            });
+        });
+    }
+
+    // Fungsi Kirim Ulasan dari Dalam Modal Box
+    function submitReview() {
+        const starValue = document.getElementById('input-star').value;
+        const commentText = document.getElementById('input-comment').value;
+
+        if (commentText.trim() === "" || !currentModalPropertyId) {
+            alert("Harap masukkan ulasan tertulis terlebih dahulu!");
+            return;
+        }
+
+        let stars = "⭐".repeat(parseInt(starValue));
+        const newReview = { star: stars, text: commentText };
+
+        db.ref(`reviews/${currentModalPropertyId}`).push(newReview)
+            .then(() => {
+                document.getElementById('input-comment').value = "";
+            })
+            .catch((err) => alert("Gagal mengirim ulasan: " + err.message));
+    }
+
+    // Menutup modal otomatis jika area hitam di luar box diklik
+    window.onclick = function(event) {
+        const modal = document.getElementById('property-modal');
+        if (event.target == modal) {
+            modal.style.display = "none";
         }
     }
     </script>
 
-    <!-- File Javascript Eksternal Bawaan Kamu -->
     <script src="script.js"></script>
 </body>
 </html>
