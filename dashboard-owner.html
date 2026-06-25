@@ -77,13 +77,56 @@
             </div>
 
             <div class="media-upload-section" style="margin-top: 20px; background: #191B26; padding: 20px; border-radius: 6px; border: 1px solid #232631;">
-                <h4 style="color: #66FCF1; margin-bottom: 10px;">📁 File Media Properti (Direct File)</h4>
-                <div class="upload-row">
-                    <div class="media-box" style="width: 100%;">
-                        <label style="color: #fff; font-size: 14px; display: block; margin-bottom: 5px;">Pilih Foto Gambar Utama / Thumbnail Properti</label>
-                        <input type="file" id="file-thumb-input" accept="image/*" required style="width: 100%; color: #fff; background: #111; padding: 10px; border: 1px solid #232631; border-radius: 4px; font-size: 13px;">
-                        <small style="color: #8A8F98; display: block; margin-top: 5px;">Tips: Gunakan foto berukuran kecil (< 1MB) agar loading penyimpanan kilat.</small>
+                <h4 style="color: #66FCF1; margin-bottom: 15px;">📁 File Media Properti (Direct File)</h4>
+
+                <!-- INPUT 1: THUMBNAIL UTAMA -->
+                <div style="margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid #232631;">
+                    <label style="color: #fff; font-size: 14px; display: block; margin-bottom: 5px;">🖼️ Foto Thumbnail Utama <span style="color:#FF5A5F;">*Wajib</span></label>
+                    <input type="file" id="file-thumb-input" accept="image/*" required style="width: 100%; color: #fff; background: #111; padding: 10px; border: 1px solid #232631; border-radius: 4px; font-size: 13px;" onchange="previewMedia(this, 'prev-thumb')">
+                    <small style="color: #8A8F98; display: block; margin-top: 5px;">Foto cover yang tampil di halaman daftar properti. Maks. <strong style="color:#FF5A5F;">0.7MB</strong> — kompres di <a href="https://squoosh.app" target="_blank" style="color:#66FCF1;">squoosh.app</a></small>
+                    <div id="prev-thumb" style="display:none; margin-top: 8px;">
+                        <img style="max-height: 140px; border-radius: 4px; border: 1px solid #66FCF1; object-fit:cover;">
                     </div>
+                </div>
+
+                <!-- INPUT 2: FOTO-FOTO GALERI PROPERTI (maks 3 foto) -->
+                <div style="margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid #232631;">
+                    <label style="color: #fff; font-size: 14px; display: block; margin-bottom: 5px;">📷 Foto Galeri Properti <span style="color:#8A8F98;">(Opsional, maks. 3 foto)</span></label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                        <div>
+                            <input type="file" id="file-foto1" accept="image/*" style="width: 100%; color: #fff; background: #111; padding: 8px; border: 1px solid #232631; border-radius: 4px; font-size: 12px;" onchange="previewMedia(this, 'prev-foto1')">
+                            <div id="prev-foto1" style="display:none; margin-top: 6px;"><img style="width:100%; height:80px; border-radius:4px; object-fit:cover; border:1px solid #232631;"></div>
+                        </div>
+                        <div>
+                            <input type="file" id="file-foto2" accept="image/*" style="width: 100%; color: #fff; background: #111; padding: 8px; border: 1px solid #232631; border-radius: 4px; font-size: 12px;" onchange="previewMedia(this, 'prev-foto2')">
+                            <div id="prev-foto2" style="display:none; margin-top: 6px;"><img style="width:100%; height:80px; border-radius:4px; object-fit:cover; border:1px solid #232631;"></div>
+                        </div>
+                        <div>
+                            <input type="file" id="file-foto3" accept="image/*" style="width: 100%; color: #fff; background: #111; padding: 8px; border: 1px solid #232631; border-radius: 4px; font-size: 12px;" onchange="previewMedia(this, 'prev-foto3')">
+                            <div id="prev-foto3" style="display:none; margin-top: 6px;"><img style="width:100%; height:80px; border-radius:4px; object-fit:cover; border:1px solid #232631;"></div>
+                        </div>
+                    </div>
+                    <small style="color: #8A8F98; display: block; margin-top: 6px;">Masing-masing foto maks. <strong style="color:#FF5A5F;">0.5MB</strong>. Ditampilkan di galeri detail properti.</small>
+                </div>
+
+                <!-- INPUT 3: VIDEO TOUR -->
+                <div>
+                    <label style="color: #fff; font-size: 14px; display: block; margin-bottom: 5px;">🎬 Video Tour Properti <span style="color:#8A8F98;">(Opsional)</span></label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start;">
+                        <div>
+                            <label style="color: #8A8F98; font-size: 12px; display:block; margin-bottom:4px;">Upload File Video (maks. 5MB)</label>
+                            <input type="file" id="file-video" accept="video/*" style="width: 100%; color: #fff; background: #111; padding: 8px; border: 1px solid #232631; border-radius: 4px; font-size: 12px;" onchange="previewVideo(this)">
+                            <div id="prev-video" style="display:none; margin-top: 8px;">
+                                <video controls style="width:100%; border-radius:4px; border:1px solid #66FCF1; max-height:120px;"></video>
+                            </div>
+                        </div>
+                        <div>
+                            <label style="color: #8A8F98; font-size: 12px; display:block; margin-bottom:4px;">— atau — Link YouTube / Google Drive</label>
+                            <input type="url" id="meta-video-url" placeholder="https://youtube.com/embed/..." style="width: 100%; color: #fff; background: #111; padding: 10px; border: 1px solid #232631; border-radius: 4px; font-size: 13px; box-sizing:border-box;">
+                            <small style="color: #8A8F98; font-size:11px; margin-top:4px; display:block;">Pakai link <strong>embed</strong> YouTube. Contoh: https://www.youtube.com/embed/KODE_VIDEO</small>
+                        </div>
+                    </div>
+                    <small style="color: #8A8F98; display: block; margin-top: 6px;">⚠️ Jika kedua diisi, <strong style="color:#66FCF1;">link URL diprioritaskan</strong> (lebih hemat kuota Firebase).</small>
                 </div>
             </div>
 
@@ -102,7 +145,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <script>
-    // Konfigurasi Terpusat STAYVIBE
     const firebaseConfig = {
         apiKey: "AIzaSyDiB5OzbszFLTI9cGulNVYoywp7_0f3Dkc",
         authDomain: "stayvibe-f52d4.firebaseapp.com",
@@ -118,73 +160,151 @@
     }
     const db = firebase.database();
 
-    // LOGIKA PROSES UPLOAD DENGAN METODE BASE64 CONVERSION
-    function handleUpload(event) {
+    // -------------------------------------------------------
+    // PREVIEW GAMBAR LANGSUNG SAAT FILE DIPILIH
+    // -------------------------------------------------------
+    function previewMedia(input, previewId) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const box = document.getElementById(previewId);
+            box.style.display = 'block';
+            box.querySelector('img').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function previewVideo(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        const box = document.getElementById('prev-video');
+        box.style.display = 'block';
+        box.querySelector('video').src = url;
+    }
+
+    // -------------------------------------------------------
+    // HELPER: Baca file → Base64, dengan cek ukuran
+    // -------------------------------------------------------
+    function bacaFileBase64(inputId, labelNama, maxMB) {
+        return new Promise((resolve, reject) => {
+            const input = document.getElementById(inputId);
+            if (!input || !input.files[0]) {
+                resolve(null); // opsional, boleh kosong
+                return;
+            }
+            const file = input.files[0];
+            const sizeMB = file.size / 1024 / 1024;
+            if (sizeMB > maxMB) {
+                reject(`❌ ${labelNama} terlalu besar (${sizeMB.toFixed(2)}MB). Batas maks. ${maxMB}MB.\nKompres dulu di https://squoosh.app`);
+                return;
+            }
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload  = () => resolve(reader.result);
+            reader.onerror = () => reject(`❌ Gagal membaca file ${labelNama}.`);
+        });
+    }
+
+    // -------------------------------------------------------
+    // PROSES UPLOAD UTAMA
+    // -------------------------------------------------------
+    async function handleUpload(event) {
         event.preventDefault();
         
         const btnSubmit = document.getElementById('btn-submit');
-        const fileGambar = document.getElementById('file-thumb-input').files[0];
-        
-        if(!fileGambar) {
-            alert("Silakan pilih file gambar akomodasi Anda terlebih dahulu!");
-            return;
-        }
-
         btnSubmit.disabled = true;
-        btnSubmit.innerText = "Memproses Gambar & Data... ⏳";
+        btnSubmit.innerText = "Memproses Media & Data... ⏳";
 
-        // Membaca file dan mengubahnya menjadi string teks Base64
-        const reader = new FileReader();
-        reader.readAsDataURL(fileGambar);
-        
-        reader.onload = function () {
-            const base64ImageString = reader.result; // Ini hasil string teks gambarnya
+        try {
+            // 1. Thumbnail wajib ada
+            const thumbFile = document.getElementById('file-thumb-input').files[0];
+            if (!thumbFile) {
+                alert("Silakan pilih foto Thumbnail Utama terlebih dahulu!");
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "PROSES UPLOAD PROPERTI";
+                return;
+            }
 
+            // 2. Baca semua file secara paralel
+            btnSubmit.innerText = "Mengkonversi media... ⏳";
+            const [imgThumb, imgFoto1, imgFoto2, imgFoto3] = await Promise.all([
+                bacaFileBase64('file-thumb-input', 'Thumbnail', 0.7),
+                bacaFileBase64('file-foto1', 'Foto Galeri 1', 0.5),
+                bacaFileBase64('file-foto2', 'Foto Galeri 2', 0.5),
+                bacaFileBase64('file-foto3', 'Foto Galeri 3', 0.5),
+            ]);
+
+            // 3. Video: prioritaskan URL, fallback ke file Base64
+            let videoFinal = document.getElementById('meta-video-url').value.trim() || null;
+            if (!videoFinal) {
+                const videoFile = document.getElementById('file-video').files[0];
+                if (videoFile) {
+                    const sizeMB = videoFile.size / 1024 / 1024;
+                    if (sizeMB > 5) {
+                        alert(`❌ File video terlalu besar (${sizeMB.toFixed(2)}MB). Batas maks. 5MB.\nDisarankan upload ke YouTube lalu gunakan link embed.`);
+                        btnSubmit.disabled = false;
+                        btnSubmit.innerText = "PROSES UPLOAD PROPERTI";
+                        return;
+                    }
+                    btnSubmit.innerText = "Mengkonversi video... ⏳ (mungkin sebentar)";
+                    videoFinal = await new Promise((res, rej) => {
+                        const r = new FileReader();
+                        r.readAsDataURL(videoFile);
+                        r.onload  = () => res(r.result);
+                        r.onerror = () => rej("Gagal baca video.");
+                    });
+                }
+            }
+
+            // 4. Susun data properti lengkap
+            btnSubmit.innerText = "Menyimpan ke database... ⏳";
             const dataProperti = {
-                title: document.getElementById('meta-title').value,
-                creator: document.getElementById('meta-creator').value,
-                city: document.getElementById('meta-city').value,
-                roomType: document.getElementById('meta-access').value, 
-                price: parseInt(document.getElementById('meta-price').value) || 0,
+                title:    document.getElementById('meta-title').value,
+                creator:  document.getElementById('meta-creator').value,
+                city:     document.getElementById('meta-city').value,
+                roomType: document.getElementById('meta-access').value,
+                price:    parseInt(document.getElementById('meta-price').value) || 0,
                 regulasi: document.getElementById('meta-regulasi').value,
-                tags: document.getElementById('meta-tags').value,
+                tags:     document.getElementById('meta-tags').value,
                 duration: document.getElementById('meta-duration').value,
-                phone: document.getElementById('meta-phone').value,
-                booking: document.getElementById('meta-booking').value,
-                desc: document.getElementById('meta-desc').value,
-                maps: document.getElementById('meta-maps').value,
-                img: base64ImageString, // <-- Disimpan dalam bentuk teks string di Realtime Database gratisan
-                statusSistem: "AKTIF"
+                phone:    document.getElementById('meta-phone').value,
+                booking:  document.getElementById('meta-booking').value,
+                desc:     document.getElementById('meta-desc').value,
+                maps:     document.getElementById('meta-maps').value,
+                img:      imgThumb,                          // Thumbnail utama
+                galeri:   [imgFoto1, imgFoto2, imgFoto3].filter(Boolean), // Foto properti (array, hapus yang null)
+                video:    videoFinal,                        // Video tour (URL atau Base64)
+                statusSistem: "AKTIF",
+                uploadedAt: Date.now()
             };
 
-            // Langsung tembak ke Realtime Database tanpa lewat Storage berbayar
-            db.ref('properties').push(dataProperti)
-                .then(() => {
-                    alert("Selamat! Properti Anda berhasil terdaftar secara real-time via Base64.");
-                    document.getElementById('upload-form').reset();
-                })
-                .catch((error) => {
-                    alert("Gagal memproses pendaftaran: " + error.message);
-                    console.error(error);
-                })
-                .finally(() => {
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerText = "PROSES UPLOAD PROPERTI";
-                });
-        };
+            // 5. Simpan ke Firebase
+            await db.ref('properties').push(dataProperti);
+            alert("✅ Selamat! Properti beserta galeri foto dan video tour berhasil terdaftar!");
+            document.getElementById('upload-form').reset();
+            // Reset semua preview
+            ['prev-thumb','prev-foto1','prev-foto2','prev-foto3','prev-video'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.style.display = 'none';
+            });
 
-        reader.onerror = function (error) {
-            alert("Gagal membaca file gambar lokal.");
+        } catch (errMsg) {
+            alert(typeof errMsg === 'string' ? errMsg : "Gagal memproses: " + errMsg.message);
+            console.error(errMsg);
+        } finally {
             btnSubmit.disabled = false;
             btnSubmit.innerText = "PROSES UPLOAD PROPERTI";
-        };
+        }
     }
 
-    // Ambil & Tampilkan List Properti
+    // -------------------------------------------------------
+    // TAMPILKAN LIST PROPERTI DI DASHBOARD OWNER
+    // -------------------------------------------------------
     db.ref('properties').on('value', (snapshot) => {
         const ownerGrid = document.getElementById('owner-catalog-grid');
         if(!ownerGrid) return;
-        
         ownerGrid.innerHTML = "";
 
         if(!snapshot.exists()){
@@ -193,17 +313,43 @@
         }
 
         snapshot.forEach((child) => {
+            const key  = child.key;
             const item = child.val();
+
+            // Badge jumlah foto galeri
+            const jumlahFoto = (item.galeri && item.galeri.length) ? item.galeri.length : 0;
+            const badgeFoto  = jumlahFoto > 0
+                ? `<span style="font-size:11px; background:#66FCF144; color:#66FCF1; padding:2px 6px; border-radius:3px;">📷 ${jumlahFoto} foto</span>`
+                : '';
+            const badgeVideo = item.video
+                ? `<span style="font-size:11px; background:#FF9800AA; color:#fff; padding:2px 6px; border-radius:3px; margin-left:4px;">🎬 video</span>`
+                : '';
+
             ownerGrid.innerHTML += `
                 <div class="property-card" style="padding: 10px; background:#191B26; border-radius:6px;">
-                    <img src="${item.img || 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500'}" style="width:100%; height:130px; object-fit:cover; border-radius:4px;">
+                    <img src="${item.img || 'https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500'}" 
+                         style="width:100%; height:130px; object-fit:cover; border-radius:4px;"
+                         onerror="this.src='https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=500'">
                     <h3 style="font-size:15px; margin: 8px 0 4px 0; color:#fff;">${item.title || 'Tanpa Nama'}</h3>
-                    <p style="font-size:12px; color:#8A8F98; margin:0;">ID Creator: ${item.creator || '-'}</p>
-                    <p style="font-size:13px; color:#66FCF1; font-weight:bold; margin-top:5px;">Rp ${(item.price || 0).toLocaleString('id-ID')}/malam</p>
+                    <p style="font-size:12px; color:#8A8F98; margin:0 0 4px 0;">ID Creator: ${item.creator || '-'}</p>
+                    <div style="margin-bottom:6px;">${badgeFoto}${badgeVideo}</div>
+                    <p style="font-size:13px; color:#66FCF1; font-weight:bold; margin:0 0 8px 0;">Rp ${(item.price || 0).toLocaleString('id-ID')}/malam</p>
+                    <button onclick="deleteProperty('${key}', '${(item.title||'').replace(/'/g,"\\'")}' )" 
+                        style="background:#FF5A5F; color:#fff; border:none; padding:6px; border-radius:4px; cursor:pointer; font-size:12px; width:100%; font-weight:bold;">
+                        🗑️ Hapus
+                    </button>
                 </div>
             `;
         });
     });
+
+    function deleteProperty(id, title) {
+        if (confirm(`Hapus permanen properti "${title}"?\nTindakan ini tidak bisa dibatalkan.`)) {
+            db.ref(`properties/${id}`).remove()
+                .then(() => alert(`Properti "${title}" berhasil dihapus.`))
+                .catch(err => alert("Gagal hapus: " + err.message));
+        }
+    }
     </script>
 <<<<<<< HEAD
 
